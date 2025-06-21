@@ -149,7 +149,7 @@ export default function HealthTracking() {
 
   if (loading) {
     return (
-      <div className="p-6 flex items-center justify-center">
+      <div className="p-4 sm:p-6 flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="h-8 w-8 animate-spin text-blue-600 mx-auto mb-4" />
           <p className="text-gray-600">Loading health metrics...</p>
@@ -159,62 +159,67 @@ export default function HealthTracking() {
   }
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex-1 min-w-0">
-          <h1 className="text-2xl font-bold text-gray-900">Health Tracking</h1>
-          <p className="text-gray-600">Monitor and track your health metrics</p>
+    <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
+      {/* Header - Mobile Optimized */}
+      <div className="space-y-4">
+        <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
+          <div className="flex-1 min-w-0">
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Health Tracking</h1>
+            <p className="text-sm sm:text-base text-gray-600">Monitor and track your health metrics</p>
+          </div>
+          <button
+            onClick={() => setShowAddForm(true)}
+            className="w-full sm:w-auto bg-blue-600 text-white px-4 py-3 sm:py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center space-x-2 font-medium"
+          >
+            <Plus className="h-5 w-5" />
+            <span>Add Reading</span>
+          </button>
         </div>
-        <button
-          onClick={() => setShowAddForm(true)}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2 flex-shrink-0 ml-4"
-        >
-          <Plus className="h-5 w-5" />
-          <span>Add Reading</span>
-        </button>
       </div>
 
-      {/* Category Tabs */}
+      {/* Category Tabs - Mobile Optimized */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-        <div className="border-b border-gray-200">
-          <nav className="flex space-x-8 px-6" aria-label="Tabs">
-            {healthCategories.map((category) => {
-              const Icon = category.icon;
-              const isActive = selectedCategory === category.id;
-              
-              return (
-                <button
-                  key={category.id}
-                  onClick={() => setSelectedCategory(category.id)}
-                  className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
-                    isActive
-                      ? 'border-blue-500 text-blue-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}
-                >
-                  <div className="flex items-center space-x-2">
-                    <Icon className="h-5 w-5" />
-                    <span>{category.name}</span>
-                  </div>
-                </button>
-              );
-            })}
-          </nav>
+        <div className="border-b border-gray-200 overflow-hidden">
+          <div className="overflow-x-auto scrollbar-hide">
+            <nav className="flex space-x-4 sm:space-x-8 px-4 sm:px-6 min-w-max" aria-label="Tabs">
+              {healthCategories.map((category) => {
+                const Icon = category.icon;
+                const isActive = selectedCategory === category.id;
+                
+                return (
+                  <button
+                    key={category.id}
+                    onClick={() => setSelectedCategory(category.id)}
+                    className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors whitespace-nowrap ${
+                      isActive
+                        ? 'border-blue-500 text-blue-600'
+                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    }`}
+                  >
+                    <div className="flex items-center space-x-2">
+                      <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
+                      <span className="hidden sm:inline">{category.name}</span>
+                      <span className="sm:hidden">{category.name.split(' ')[0]}</span>
+                    </div>
+                  </button>
+                );
+              })}
+            </nav>
+          </div>
         </div>
 
         {/* Content */}
-        <div className="p-6">
+        <div className="p-4 sm:p-6">
           {/* Latest Reading */}
           {categoryRecords.length > 0 && (
             <div className="mb-6 p-4 bg-gray-50 rounded-lg">
               <div className="flex items-center justify-between">
-                <div>
+                <div className="flex-1 min-w-0">
                   <p className="text-sm text-gray-600">Latest Reading</p>
-                  <p className="text-2xl font-bold text-gray-900">
+                  <p className="text-xl sm:text-2xl font-bold text-gray-900 truncate">
                     {categoryRecords[0].value} {categoryRecords[0].unit}
                   </p>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-xs sm:text-sm text-gray-500">
                     {new Date(categoryRecords[0].recorded_at).toLocaleDateString()} at{' '}
                     {new Date(categoryRecords[0].recorded_at).toLocaleTimeString([], { 
                       hour: '2-digit', 
@@ -222,9 +227,9 @@ export default function HealthTracking() {
                     })}
                   </p>
                 </div>
-                <div className={`p-3 rounded-full bg-${selectedCategoryData?.color}-100`}>
+                <div className={`p-2 sm:p-3 rounded-full bg-${selectedCategoryData?.color}-100 flex-shrink-0`}>
                   {selectedCategoryData && (
-                    <selectedCategoryData.icon className={`h-8 w-8 text-${selectedCategoryData.color}-600`} />
+                    <selectedCategoryData.icon className={`h-6 w-6 sm:h-8 sm:w-8 text-${selectedCategoryData.color}-600`} />
                   )}
                 </div>
               </div>
@@ -234,11 +239,12 @@ export default function HealthTracking() {
           {/* Records List */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-medium text-gray-900">Recent Readings</h3>
+              <h3 className="text-base sm:text-lg font-medium text-gray-900">Recent Readings</h3>
               {categoryRecords.length > 0 && (
-                <button className="text-blue-600 hover:text-blue-700 text-sm font-medium flex items-center space-x-1">
-                  <TrendingUp className="h-4 w-4" />
-                  <span>View Trends</span>
+                <button className="text-blue-600 hover:text-blue-700 text-xs sm:text-sm font-medium flex items-center space-x-1">
+                  <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4" />
+                  <span className="hidden sm:inline">View Trends</span>
+                  <span className="sm:hidden">Trends</span>
                 </button>
               )}
             </div>
@@ -246,12 +252,12 @@ export default function HealthTracking() {
             {categoryRecords.length === 0 ? (
               <div className="text-center py-8">
                 <div className="text-gray-400 mb-2">
-                  {selectedCategoryData && <selectedCategoryData.icon className="h-12 w-12 mx-auto" />}
+                  {selectedCategoryData && <selectedCategoryData.icon className="h-10 w-10 sm:h-12 sm:w-12 mx-auto" />}
                 </div>
-                <p className="text-gray-500">No readings recorded yet</p>
+                <p className="text-gray-500 text-sm sm:text-base">No readings recorded yet</p>
                 <button
                   onClick={() => setShowAddForm(true)}
-                  className="mt-2 text-blue-600 hover:text-blue-700 font-medium"
+                  className="mt-2 text-blue-600 hover:text-blue-700 font-medium text-sm sm:text-base"
                 >
                   Add your first reading
                 </button>
@@ -259,13 +265,13 @@ export default function HealthTracking() {
             ) : (
               <div className="space-y-3">
                 {categoryRecords.map((record) => (
-                  <div key={record.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-3">
-                        <div className="font-medium text-gray-900">
+                  <div key={record.id} className="flex items-center justify-between p-3 sm:p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-3 space-y-1 sm:space-y-0">
+                        <div className="font-medium text-gray-900 text-sm sm:text-base">
                           {record.value} {record.unit}
                         </div>
-                        <div className="text-sm text-gray-500">
+                        <div className="text-xs sm:text-sm text-gray-500">
                           {new Date(record.recorded_at).toLocaleDateString()} at{' '}
                           {new Date(record.recorded_at).toLocaleTimeString([], { 
                             hour: '2-digit', 
@@ -274,10 +280,10 @@ export default function HealthTracking() {
                         </div>
                       </div>
                       {record.notes && (
-                        <p className="text-sm text-gray-600 mt-1">{record.notes}</p>
+                        <p className="text-xs sm:text-sm text-gray-600 mt-1 line-clamp-2">{record.notes}</p>
                       )}
                     </div>
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center space-x-2 flex-shrink-0 ml-2">
                       <button 
                         onClick={() => handleDeleteMetric(record.id)}
                         className="p-2 text-red-400 hover:text-red-600 transition-colors"
@@ -298,14 +304,14 @@ export default function HealthTracking() {
       {showAddForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 rounded-t-lg">
+            <div className="sticky top-0 bg-white border-b border-gray-200 px-4 sm:px-6 py-4 rounded-t-lg">
               <h3 className="text-lg font-medium text-gray-900">Add Health Readings</h3>
               <p className="text-sm text-gray-600 mt-1">Enter values for any or all health metrics</p>
             </div>
             
-            <form onSubmit={handleSubmit} className="p-6 space-y-6">
+            <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-6">
               {/* Date and Time */}
-              <div className="grid grid-cols-2 gap-4 pb-4 border-b border-gray-200">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-4 border-b border-gray-200">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
                   <input
@@ -329,7 +335,7 @@ export default function HealthTracking() {
               </div>
 
               {/* Health Metrics */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {healthCategories.map((category) => {
                   const Icon = category.icon;
                   const metricData = formData[category.id as keyof typeof formData] as MetricFormData;
@@ -337,10 +343,10 @@ export default function HealthTracking() {
                   return (
                     <div key={category.id} className="space-y-3">
                       <div className="flex items-center space-x-3">
-                        <div className={`p-2 rounded-lg bg-${category.color}-100`}>
+                        <div className={`p-2 rounded-lg bg-${category.color}-100 flex-shrink-0`}>
                           <Icon className={`h-5 w-5 text-${category.color}-600`} />
                         </div>
-                        <div>
+                        <div className="min-w-0 flex-1">
                           <h4 className="font-medium text-gray-900">{category.name}</h4>
                           <p className="text-sm text-gray-500">Unit: {category.unit}</p>
                         </div>
@@ -369,14 +375,14 @@ export default function HealthTracking() {
               </div>
 
               {/* Form Actions */}
-              <div className="flex space-x-3 pt-4 border-t border-gray-200">
+              <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3 pt-4 border-t border-gray-200">
                 <button
                   type="button"
                   onClick={() => {
                     setShowAddForm(false);
                     resetForm();
                   }}
-                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                  className="w-full sm:flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
                   disabled={submitting}
                 >
                   Cancel
@@ -384,7 +390,7 @@ export default function HealthTracking() {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full sm:flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {submitting ? (
                     <div className="flex items-center justify-center">
