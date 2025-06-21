@@ -144,31 +144,54 @@ self.addEventListener('sync', (event) => {
 self.addEventListener('push', (event) => {
   console.log('Service Worker: Push notification received', event);
   
-  const options = {
-    body: event.data ? event.data.text() : 'New health update available',
+  let notificationData = {
+    title: 'Thryve Health Update',
+    body: 'New health update available',
     icon: '/icons/icon-192x192.png',
     badge: '/icons/icon-72x72.png',
     vibrate: [100, 50, 100],
     data: {
-      dateOfArrival: Date.now(),
-      primaryKey: 1
+      timestamp: Date.now(),
+      url: '/'
     },
     actions: [
       {
-        action: 'explore',
-        title: 'View Details',
-        icon: '/icons/icon-96x96.png'
+        action: 'open',
+        title: 'Open App'
       },
       {
         action: 'close',
-        title: 'Close',
-        icon: '/icons/icon-96x96.png'
+        title: 'Dismiss'
       }
-    ]
+    ],
+    tag: 'thryve-notification',
+    requireInteraction: false
   };
 
+  // Parse notification data if available
+  if (event.data) {
+    try {
+      const payload = event.data.json();
+      notificationData = { ...notificationData, ...payload };
+    } catch (error) {
+      console.error('Error parsing push notification data:', error);
+      // Fallback to text content
+      notificationData.body = event.data.text() || notificationData.body;
+    }
+  }
+
   event.waitUntil(
-    self.registration.showNotification('Thryve Health Update', options)
+    self.registration.showNotification(notificationData.title, {
+      body: notificationData.body,
+      icon: notificationData.icon,
+      badge: notificationData.badge,
+      image: notificationData.image,
+      vibrate: notificationData.vibrate,
+      data: notificationData.data,
+      actions: notificationData.actions,
+      tag: notificationData.tag,
+      requireInteraction: notificationData.requireInteraction
+    })
   );
 });
 
@@ -178,9 +201,39 @@ self.addEventListener('notificationclick', (event) => {
   
   event.notification.close();
 
-  if (event.action === 'explore') {
+  const urlToOpen = event.notification.data?.url || '/';
+  
+  if (event.action === 'open' || !event.action) {
+    // Open the app
     event.waitUntil(
-      clients.openWindow('/')
+      clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+        // Check if app is already open
+        for (const client of clientList) {
+          if (client.url.includes(self.location.origin) && 'focus' in client) {
+            client.focus();
+            if (urlToOpen !== '/') {
+              client.navigate(urlToOpen);
+            }
+            return;
+          }
+        }
+        
+        // Open new window if app is not open
+        if (clients.openWindow) {
+          return clients.openWindow(urlToOpen);
+        }
+      })
     );
+  } else if (event.action === 'close') {
+    // Just close the notification (already handled above)
+    return;
   }
+});
+
+// Handle notification close events
+self.addEventListener('notificationclose', (event) => {
+  console.log('Service Worker: Notification closed', event);
+  
+  // Track notification dismissal if needed
+  // This could be used for analytics or to avoid showing similar notifications
 });

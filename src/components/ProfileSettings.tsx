@@ -11,10 +11,12 @@ import {
   Edit3,
   Check,
   X,
-  AlertCircle
+  AlertCircle,
+  Bell
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
+import PushNotificationSettings from './PushNotificationSettings';
 
 interface ProfileFormData {
   full_name: string;
@@ -41,6 +43,7 @@ export default function ProfileSettings() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [editingField, setEditingField] = useState<string | null>(null);
+  const [activeSection, setActiveSection] = useState<'profile' | 'notifications'>('profile');
 
   // Load user data on component mount
   useEffect(() => {
@@ -268,6 +271,33 @@ export default function ProfileSettings() {
         </div>
       </div>
 
+      {/* Navigation Tabs */}
+      <div className="bg-white rounded-lg border border-gray-200">
+        <div className="flex border-b border-gray-200">
+          <button
+            onClick={() => setActiveSection('profile')}
+            className={`flex items-center space-x-2 px-6 py-4 font-medium transition-colors ${
+              activeSection === 'profile'
+                ? 'text-blue-600 border-b-2 border-blue-600'
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            <User className="h-5 w-5" />
+            <span>Profile Information</span>
+          </button>
+          <button
+            onClick={() => setActiveSection('notifications')}
+            className={`flex items-center space-x-2 px-6 py-4 font-medium transition-colors ${
+              activeSection === 'notifications'
+                ? 'text-blue-600 border-b-2 border-blue-600'
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            <Bell className="h-5 w-5" />
+            <span>Notifications</span>
+          </button>
+        </div>
+      </div>
       {/* Success/Error Message */}
       {message && (
         <div className={`p-4 rounded-lg border ${
@@ -286,90 +316,94 @@ export default function ProfileSettings() {
         </div>
       )}
 
-      {/* Personal Information */}
-      <div className="space-y-6">
-        <div className="flex items-center space-x-3 mb-6">
-          <div className="p-2 bg-blue-100 rounded-lg">
-            <User className="h-6 w-6 text-blue-600" />
+      {/* Content based on active section */}
+      {activeSection === 'profile' ? (
+        <div className="space-y-6">
+          <div className="flex items-center space-x-3 mb-6">
+            <div className="p-2 bg-blue-100 rounded-lg">
+              <User className="h-6 w-6 text-blue-600" />
+            </div>
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900">Personal Information</h2>
+              <p className="text-gray-600">Update your basic profile details</p>
+            </div>
           </div>
-          <div>
-            <h2 className="text-xl font-semibold text-gray-900">Personal Information</h2>
-            <p className="text-gray-600">Update your basic profile details</p>
-          </div>
-        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {renderField('full_name')}
-          {renderField('email', 'email')}
-          {renderField('phone', 'tel')}
-          {renderField('date_of_birth', 'date')}
-          {renderField('gender', 'select', ['male', 'female', 'other', 'prefer_not_to_say'])}
-        </div>
-      </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {renderField('full_name')}
+            {renderField('email', 'email')}
+            {renderField('phone', 'tel')}
+            {renderField('date_of_birth', 'date')}
+            {renderField('gender', 'select', ['male', 'female', 'other', 'prefer_not_to_say'])}
+          </div>
 
-      {/* Emergency Contact */}
-      <div className="space-y-6">
-        <div className="flex items-center space-x-3 mb-6">
-          <div className="p-2 bg-red-100 rounded-lg">
-            <Shield className="h-6 w-6 text-red-600" />
-          </div>
-          <div>
-            <h2 className="text-xl font-semibold text-gray-900">Emergency Contact</h2>
-            <p className="text-gray-600">Person to contact in case of emergency</p>
-          </div>
-        </div>
+          {/* Emergency Contact */}
+          <div className="space-y-6">
+            <div className="flex items-center space-x-3 mb-6">
+              <div className="p-2 bg-red-100 rounded-lg">
+                <Shield className="h-6 w-6 text-red-600" />
+              </div>
+              <div>
+                <h2 className="text-xl font-semibold text-gray-900">Emergency Contact</h2>
+                <p className="text-gray-600">Person to contact in case of emergency</p>
+              </div>
+            </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {renderField('emergency_contact_name')}
-          {renderField('emergency_contact_phone', 'tel')}
-        </div>
-      </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {renderField('emergency_contact_name')}
+              {renderField('emergency_contact_phone', 'tel')}
+            </div>
+          </div>
 
-      {/* Account Information */}
-      <div className="bg-gray-50 rounded-lg p-6">
-        <div className="flex items-center space-x-3 mb-4">
-          <div className="p-2 bg-gray-200 rounded-lg">
-            <Shield className="h-6 w-6 text-gray-600" />
+          {/* Account Information */}
+          <div className="bg-gray-50 rounded-lg p-6">
+            <div className="flex items-center space-x-3 mb-4">
+              <div className="p-2 bg-gray-200 rounded-lg">
+                <Shield className="h-6 w-6 text-gray-600" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Account Information</h3>
+                <p className="text-gray-600">Your account details and security information</p>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+              <div>
+                <span className="font-medium text-gray-700">Account ID:</span>
+                <p className="text-gray-600 font-mono text-xs mt-1">{user?.id}</p>
+              </div>
+              <div>
+                <span className="font-medium text-gray-700">Account Created:</span>
+                <p className="text-gray-600 mt-1">
+                  {user?.created_at ? new Date(user.created_at).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                  }) : 'Unknown'}
+                </p>
+              </div>
+            </div>
           </div>
-          <div>
-            <h3 className="text-lg font-semibold text-gray-900">Account Information</h3>
-            <p className="text-gray-600">Your account details and security information</p>
-          </div>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-          <div>
-            <span className="font-medium text-gray-700">Account ID:</span>
-            <p className="text-gray-600 font-mono text-xs mt-1">{user?.id}</p>
-          </div>
-          <div>
-            <span className="font-medium text-gray-700">Account Created:</span>
-            <p className="text-gray-600 mt-1">
-              {user?.created_at ? new Date(user.created_at).toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-              }) : 'Unknown'}
-            </p>
-          </div>
-        </div>
-      </div>
 
-      {/* Save All Button */}
-      <div className="flex justify-end pt-6 border-t border-gray-200">
-        <button
-          onClick={handleSave}
-          disabled={saving}
-          className="flex items-center space-x-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
-        >
-          {saving ? (
-            <Loader2 className="h-5 w-5 animate-spin" />
-          ) : (
-            <Save className="h-5 w-5" />
-          )}
-          <span>Save All Changes</span>
-        </button>
-      </div>
+          {/* Save All Button */}
+          <div className="flex justify-end pt-6 border-t border-gray-200">
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className="flex items-center space-x-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
+            >
+              {saving ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : (
+                <Save className="h-5 w-5" />
+              )}
+              <span>Save All Changes</span>
+            </button>
+          </div>
+        </div>
+      ) : (
+        <PushNotificationSettings />
+      )}
     </div>
   );
 }
