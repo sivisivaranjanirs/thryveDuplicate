@@ -22,13 +22,31 @@ const healthCategories = [
   { id: 'weight', name: 'Weight', icon: Scale, unit: 'lbs', color: 'green', placeholder: '150' },
 ];
 
+interface MetricFormData {
+  value: string;
+  notes: string;
+}
+
+interface MultiMetricFormData {
+  blood_pressure: MetricFormData;
+  blood_glucose: MetricFormData;
+  heart_rate: MetricFormData;
+  temperature: MetricFormData;
+  weight: MetricFormData;
+  date: string;
+  time: string;
+}
+
 export default function HealthTracking() {
   const [selectedCategory, setSelectedCategory] = useState('blood_pressure');
   const [showAddForm, setShowAddForm] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [formData, setFormData] = useState({
-    value: '',
-    notes: '',
+  const [formData, setFormData] = useState<MultiMetricFormData>({
+    blood_pressure: { value: '', notes: '' },
+    blood_glucose: { value: '', notes: '' },
+    heart_rate: { value: '', notes: '' },
+    temperature: { value: '', notes: '' },
+    weight: { value: '', notes: '' },
     date: new Date().toISOString().split('T')[0],
     time: new Date().toTimeString().split(' ')[0].slice(0, 5)
   });
@@ -43,35 +61,81 @@ export default function HealthTracking() {
   const selectedCategoryData = healthCategories.find(cat => cat.id === selectedCategory);
   const categoryRecords = allMetrics.filter(record => record.metric_type === selectedCategory);
 
+  const handleMetricChange = (metricType: string, field: 'value' | 'notes', value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      [metricType]: {
+        ...prev[metricType as keyof typeof prev],
+        [field]: value
+      }
+    }));
+  };
+
+  const handleDateTimeChange = (field: 'date' | 'time', value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const resetForm = () => {
+    setFormData({
+      blood_pressure: { value: '', notes: '' },
+      blood_glucose: { value: '', notes: '' },
+      heart_rate: { value: '', notes: '' },
+      temperature: { value: '', notes: '' },
+      weight: { value: '', notes: '' },
+      date: new Date().toISOString().split('T')[0],
+      time: new Date().toTimeString().split(' ')[0].slice(0, 5)
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
 
     const recordedAt = new Date(`${formData.date}T${formData.time}`);
+    const metricsToAdd = [];
 
-    const metricData = {
-      metric_type: selectedCategory as any,
-      value: formData.value,
-      unit: selectedCategoryData?.unit || '',
-      notes: formData.notes || undefined,
-      recorded_at: recordedAt.toISOString()
-    };
-
-    const { error } = await addMetric(metricData);
-    
-    if (error) {
-      alert(`Error adding metric: ${error}`);
-    } else {
-      setShowAddForm(false);
-      setFormData({
-        value: '',
-        notes: '',
-        date: new Date().toISOString().split('T')[0],
-        time: new Date().toTimeString().split(' ')[0].slice(0, 5)
-      });
+    // Collect all metrics that have values
+    for (const category of healthCategories) {
+      const metricData = formData[category.id as keyof typeof formData];
+      if (typeof metricData === 'object' && metricData.value.trim()) {
+        metricsToAdd.push({
+          metric_type: category.id as any,
+          value: metricData.value.trim(),
+          unit: category.unit,
+          notes: metricData.notes.trim() || undefined,
+          recorded_at: recordedAt.toISOString()
+        });
+      }
     }
-    
-    setSubmitting(false);
+
+    if (metricsToAdd.length === 0) {
+      alert('Please enter at least one health metric value.');
+      setSubmitting(false);
+      return;
+    }
+
+    try {
+      // Add all metrics
+      const results = await Promise.all(
+        metricsToAdd.map(metric => addMetric(metric))
+      );
+
+      // Check if any failed
+      const errors = results.filter(result => result.error);
+      if (errors.length > 0) {
+        alert(`Error adding some metrics: ${errors.map(e => e.error).join(', ')}`);
+      } else {
+        setShowAddForm(false);
+        resetForm();
+      }
+    } catch (error) {
+      alert(`Error adding metrics: ${error}`);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleDeleteMetric = async (metricId: string) => {
@@ -230,36 +294,24 @@ export default function HealthTracking() {
         </div>
       </div>
 
-      {/* Add Reading Modal */}
+      {/* Multi-Metric Add Reading Modal */}
       {showAddForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">
-              Add {selectedCategoryData?.name} Reading
-            </h3>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 rounded-t-lg">
+              <h3 className="text-lg font-medium text-gray-900">Add Health Readings</h3>
+              <p className="text-sm text-gray-600 mt-1">Enter values for any or all health metrics</p>
+            </div>
             
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Value ({selectedCategoryData?.unit})
-                </label>
-                <input
-                  type="text"
-                  value={formData.value}
-                  onChange={(e) => setFormData({ ...formData, value: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder={selectedCategoryData?.placeholder}
-                  required
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
+            <form onSubmit={handleSubmit} className="p-6 space-y-6">
+              {/* Date and Time */}
+              <div className="grid grid-cols-2 gap-4 pb-4 border-b border-gray-200">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
                   <input
                     type="date"
                     value={formData.date}
-                    onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                    onChange={(e) => handleDateTimeChange('date', e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     required
                   />
@@ -269,30 +321,61 @@ export default function HealthTracking() {
                   <input
                     type="time"
                     value={formData.time}
-                    onChange={(e) => setFormData({ ...formData, time: e.target.value })}
+                    onChange={(e) => handleDateTimeChange('time', e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     required
                   />
                 </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Notes (optional)
-                </label>
-                <textarea
-                  value={formData.notes}
-                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  rows={3}
-                  placeholder="Any additional notes..."
-                />
+              {/* Health Metrics */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {healthCategories.map((category) => {
+                  const Icon = category.icon;
+                  const metricData = formData[category.id as keyof typeof formData] as MetricFormData;
+                  
+                  return (
+                    <div key={category.id} className="space-y-3">
+                      <div className="flex items-center space-x-3">
+                        <div className={`p-2 rounded-lg bg-${category.color}-100`}>
+                          <Icon className={`h-5 w-5 text-${category.color}-600`} />
+                        </div>
+                        <div>
+                          <h4 className="font-medium text-gray-900">{category.name}</h4>
+                          <p className="text-sm text-gray-500">Unit: {category.unit}</p>
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <input
+                          type="text"
+                          value={metricData.value}
+                          onChange={(e) => handleMetricChange(category.id, 'value', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder={`${category.placeholder} ${category.unit}`}
+                        />
+                        
+                        <textarea
+                          value={metricData.notes}
+                          onChange={(e) => handleMetricChange(category.id, 'notes', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          rows={2}
+                          placeholder="Notes (optional)"
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
 
-              <div className="flex space-x-3 pt-4">
+              {/* Form Actions */}
+              <div className="flex space-x-3 pt-4 border-t border-gray-200">
                 <button
                   type="button"
-                  onClick={() => setShowAddForm(false)}
+                  onClick={() => {
+                    setShowAddForm(false);
+                    resetForm();
+                  }}
                   className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
                   disabled={submitting}
                 >
@@ -306,10 +389,10 @@ export default function HealthTracking() {
                   {submitting ? (
                     <div className="flex items-center justify-center">
                       <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                      Saving...
+                      Saving Readings...
                     </div>
                   ) : (
-                    'Save Reading'
+                    'Save Readings'
                   )}
                 </button>
               </div>
