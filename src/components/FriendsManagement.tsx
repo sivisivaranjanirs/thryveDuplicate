@@ -146,27 +146,29 @@ export default function FriendsManagement() {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="min-h-screen w-full overflow-x-hidden">
+      <div className="max-w-full px-4 sm:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Reading Access Management</h1>
-          <p className="text-gray-600">Request access to view others' health readings</p>
+        <div className="min-w-0 flex-1 pr-4">
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 truncate">Reading Access Management</h1>
+          <p className="text-sm sm:text-base text-gray-600">Request access to view others' health readings</p>
         </div>
         <button
           onClick={() => setShowAddFriend(true)}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2"
+          className="bg-blue-600 text-white px-3 sm:px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2 flex-shrink-0"
         >
           <UserPlus className="h-5 w-5" />
-          <span>Request Access</span>
+          <span className="hidden sm:inline">Request Access</span>
+          <span className="sm:hidden">Request</span>
         </button>
       </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-3 sm:p-4">
           <div className="flex items-center">
             <AlertCircle className="h-5 w-5 text-red-600 mr-2" />
-            <p className="text-red-700">{error}</p>
+            <p className="text-sm sm:text-base text-red-700 break-words">{error}</p>
           </div>
         </div>
       )}
@@ -174,68 +176,70 @@ export default function FriendsManagement() {
       {/* Tabs */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200">
         <div className="border-b border-gray-200">
-          <nav className="flex space-x-8 px-6" aria-label="Tabs">
+          <div className="w-full overflow-x-auto">
+            <nav className="flex px-4 sm:px-6" aria-label="Tabs">
             <button
               onClick={() => setActiveTab('friends')}
-              className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+              className={`flex-shrink-0 py-4 px-2 sm:px-4 border-b-2 font-medium text-xs sm:text-sm transition-colors mr-4 sm:mr-8 ${
                 activeTab === 'friends'
                   ? 'border-blue-500 text-blue-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-1 sm:space-x-2">
                 <Users className="h-5 w-5" />
-                <span>My Access ({friends.length})</span>
+                <span className="whitespace-nowrap">My Access ({friends.length})</span>
               </div>
             </button>
             <button
               onClick={() => setActiveTab('my-access')}
-              className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+              className={`flex-shrink-0 py-4 px-2 sm:px-4 border-b-2 font-medium text-xs sm:text-sm transition-colors mr-4 sm:mr-8 ${
                 activeTab === 'my-access'
                   ? 'border-green-500 text-green-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-1 sm:space-x-2">
                 <Shield className="h-5 w-5" />
-                <span>Who Can View Mine ({myViewers.length})</span>
+                <span className="whitespace-nowrap">Who Can View Mine ({myViewers.length})</span>
               </div>
             </button>
             <button
               onClick={() => setActiveTab('requests')}
-              className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+              className={`flex-shrink-0 py-4 px-2 sm:px-4 border-b-2 font-medium text-xs sm:text-sm transition-colors ${
                 activeTab === 'requests'
                   ? 'border-blue-500 text-blue-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-1 sm:space-x-2">
                 <Mail className="h-5 w-5" />
-                <span>Requests ({receivedRequests.length})</span>
+                <span className="whitespace-nowrap">Requests ({receivedRequests.length})</span>
               </div>
             </button>
           </nav>
+          </div>
         </div>
 
         {/* Tab Content */}
-        <div className="p-6">
+        <div className="p-4 sm:p-6">
           {activeTab === 'friends' && (
             <div className="space-y-4">
               {friends.length === 0 ? (
                 <div className="text-center py-8">
                   <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">No reading access yet</h3>
-                  <p className="text-gray-600 mb-4">Request access to view others' health readings</p>
+                  <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-2">No reading access yet</h3>
+                  <p className="text-sm sm:text-base text-gray-600 mb-4">Request access to view others' health readings</p>
                   <button
                     onClick={() => setShowAddFriend(true)}
-                    className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                    className="bg-blue-600 text-white px-3 sm:px-4 py-2 text-sm sm:text-base rounded-lg hover:bg-blue-700 transition-colors"
                   >
                     Request Your First Access
                   </button>
                 </div>
               ) : (
                 friends.map((permission) => (
-                  <div key={permission.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                  <div key={permission.id} className="flex items-center justify-between p-3 sm:p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
                     <div className="flex items-center space-x-4">
                       <div className="bg-blue-100 p-2 rounded-full">
                         <Users className="h-5 w-5 text-blue-600" />
@@ -251,7 +255,7 @@ export default function FriendsManagement() {
                         >
                           {permission.owner_name || permission.owner_email?.split('@')[0] || 'User'}
                         </button>
-                        <p className="text-sm text-gray-500">{permission.owner_email || 'No email available'}</p>
+                        <p className="text-xs sm:text-sm text-gray-500 break-words">{permission.owner_email || 'No email available'}</p>
                         <p className="text-xs text-gray-400">
                           Access granted {new Date(permission.created_at).toLocaleDateString()}
                         </p>
@@ -270,7 +274,7 @@ export default function FriendsManagement() {
                       >
                         <FileText className="h-4 w-4" />
                       </button>
-                      <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
+                      <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full whitespace-nowrap">
                         Active
                       </span>
                     </div>
@@ -285,12 +289,12 @@ export default function FriendsManagement() {
               {myViewers.length === 0 ? (
                 <div className="text-center py-8">
                   <Shield className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">No one has access yet</h3>
-                  <p className="text-gray-600">No users currently have permission to view your health readings</p>
+                  <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-2">No one has access yet</h3>
+                  <p className="text-sm sm:text-base text-gray-600">No users currently have permission to view your health readings</p>
                 </div>
               ) : (
                 myViewers.map((permission) => (
-                  <div key={permission.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                  <div key={permission.id} className="flex items-center justify-between p-3 sm:p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
                     <div className="flex items-center space-x-4">
                       <div className="bg-green-100 p-2 rounded-full">
                         <Shield className="h-5 w-5 text-green-600" />
@@ -299,7 +303,7 @@ export default function FriendsManagement() {
                         <h3 className="font-medium text-gray-900">
                           {permission.viewer_name || permission.viewer_email?.split('@')[0] || 'Unknown User'}
                         </h3>
-                        <p className="text-sm text-gray-500">{permission.viewer_email || 'No email available'}</p>
+                        <p className="text-xs sm:text-sm text-gray-500 break-words">{permission.viewer_email || 'No email available'}</p>
                         <p className="text-xs text-gray-400">
                           Access granted {new Date(permission.created_at).toLocaleDateString()}
                         </p>
@@ -307,7 +311,7 @@ export default function FriendsManagement() {
                     </div>
                     
                     <div className="flex items-center space-x-2">
-                      <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
+                      <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full whitespace-nowrap">
                         Can View
                       </span>
                       <button
@@ -330,16 +334,16 @@ export default function FriendsManagement() {
             <div className="space-y-6">
               {/* Received Requests */}
               <div>
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Requests to View My Readings</h3>
+                <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-4">Requests to View My Readings</h3>
                 {receivedRequests.length === 0 ? (
                   <div className="text-center py-6">
                     <Mail className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-                    <p className="text-gray-500">No pending reading requests</p>
+                    <p className="text-sm sm:text-base text-gray-500">No pending reading requests</p>
                   </div>
                 ) : (
                   <div className="space-y-3">
                     {receivedRequests.map((request) => (
-                      <div key={request.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+                      <div key={request.id} className="flex items-center justify-between p-3 sm:p-4 border border-gray-200 rounded-lg">
                         <div className="flex items-center space-x-4">
                           <div className="bg-yellow-100 p-2 rounded-full">
                             <UserPlus className="h-5 w-5 text-yellow-600" />
@@ -348,9 +352,9 @@ export default function FriendsManagement() {
                             <h4 className="font-medium text-gray-900">
                               {request.requester_name || request.requester_email?.split('@')[0] || 'Unknown User'}
                             </h4>
-                            <p className="text-sm text-gray-500">{request.requester_email || 'No email available'}</p>
+                            <p className="text-xs sm:text-sm text-gray-500 break-words">{request.requester_email || 'No email available'}</p>
                             {request.message && (
-                              <p className="text-sm text-gray-600 mt-1">"{request.message}"</p>
+                              <p className="text-xs sm:text-sm text-gray-600 mt-1 break-words">"{request.message}"</p>
                             )}
                             <p className="text-xs text-gray-400 mt-2">
                               {new Date(request.created_at).toLocaleString()}
@@ -358,7 +362,7 @@ export default function FriendsManagement() {
                           </div>
                         </div>
                         
-                        <div className="flex items-center space-x-2">
+                        <div className="flex items-center space-x-2 flex-shrink-0">
                           <button
                             onClick={() => handleAcceptRequest(request.id)}
                             className="p-2 bg-green-100 text-green-600 hover:bg-green-200 rounded-lg transition-colors"
@@ -382,16 +386,16 @@ export default function FriendsManagement() {
 
               {/* Sent Requests */}
               <div>
-                <h3 className="text-lg font-medium text-gray-900 mb-4">My Requests for Access</h3>
+                <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-4">My Requests for Access</h3>
                 {sentRequests.length === 0 ? (
                   <div className="text-center py-6">
                     <Send className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-                    <p className="text-gray-500">No pending access requests</p>
+                    <p className="text-sm sm:text-base text-gray-500">No pending access requests</p>
                   </div>
                 ) : (
                   <div className="space-y-3">
                     {sentRequests.map((request) => (
-                      <div key={request.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+                      <div key={request.id} className="flex items-center justify-between p-3 sm:p-4 border border-gray-200 rounded-lg">
                         <div className="flex items-center space-x-4">
                           <div className="bg-blue-100 p-2 rounded-full">
                             <Clock className="h-5 w-5 text-blue-600" />
@@ -400,14 +404,14 @@ export default function FriendsManagement() {
                             <h4 className="font-medium text-gray-900">
                               {request.owner_name || request.owner_email?.split('@')[0] || 'Unknown User'}
                             </h4>
-                            <p className="text-sm text-gray-500">{request.owner_email || 'No email available'}</p>
+                            <p className="text-xs sm:text-sm text-gray-500 break-words">{request.owner_email || 'No email available'}</p>
                             <p className="text-xs text-gray-400">
                               Sent {new Date(request.created_at).toLocaleDateString()}
                             </p>
                           </div>
                         </div>
                         
-                        <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full">
+                        <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full whitespace-nowrap">
                           Pending
                         </span>
                       </div>
@@ -419,46 +423,47 @@ export default function FriendsManagement() {
           )}
         </div>
       </div>
+      </div>
 
       {/* Add Friend Modal */}
       {showAddFriend && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Request Reading Access</h3>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg p-4 sm:p-6 w-full max-w-md">
+            <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-4">Request Reading Access</h3>
             
             <form onSubmit={handleSendReadingRequest} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                   User's Email Address
                 </label>
                 <input
                   type="email"
                   value={friendEmail}
                   onChange={(e) => setFriendEmail(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="user@example.com"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                   Message (optional)
                 </label>
                 <textarea
                   value={friendMessage}
                   onChange={(e) => setFriendMessage(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   rows={3}
                   placeholder="Hi! I'd like to view your health readings on HealthVoice..."
                 />
               </div>
 
-              <div className="flex space-x-3 pt-4">
+              <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3 pt-4">
                 <button
                   type="button"
                   onClick={() => setShowAddFriend(false)}
-                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                  className="w-full sm:flex-1 px-4 py-2 text-sm border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
                   disabled={submitting}
                 >
                   Cancel
@@ -466,7 +471,7 @@ export default function FriendsManagement() {
                 <button
                   type="submit"
                   disabled={submitting || !friendEmail.trim()}
-                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full sm:flex-1 px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {submitting ? (
                     <div className="flex items-center justify-center">
@@ -482,6 +487,7 @@ export default function FriendsManagement() {
           </div>
         </div>
       )}
+    </div>
     </div>
   );
 }

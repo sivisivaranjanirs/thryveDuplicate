@@ -100,19 +100,19 @@ export default function ChatHistory() {
   };
 
   return (
-    <div className="h-full flex bg-gray-50">
+    <div className="h-full flex bg-gray-50 overflow-hidden">
       {/* Left Sidebar - Conversations List */}
-      <div className="w-1/3 bg-white border-r border-gray-200 flex flex-col">
+      <div className="w-full sm:w-1/3 bg-white border-r border-gray-200 flex flex-col min-w-0">
         {/* Header */}
-        <div className="p-6 border-b border-gray-200">
+        <div className="p-4 sm:p-6 border-b border-gray-200">
           <div className="flex items-center justify-between mb-4">
-            <div>
-              <h1 className="text-xl font-bold text-gray-900">Chat History</h1>
-              <p className="text-sm text-gray-600">Your conversations</p>
+            <div className="min-w-0 flex-1">
+              <h1 className="text-lg sm:text-xl font-bold text-gray-900 truncate">Chat History</h1>
+              <p className="text-xs sm:text-sm text-gray-600">Your conversations</p>
             </div>
             <button
               onClick={handleStartNewConversation}
-              className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+              className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors flex-shrink-0"
               title="New conversation"
             >
               <Plus className="h-5 w-5" />
@@ -127,7 +127,7 @@ export default function ChatHistory() {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Search conversations..."
-              className="w-full pl-9 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full pl-9 pr-4 py-2 text-xs sm:text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
         </div>
@@ -135,14 +135,14 @@ export default function ChatHistory() {
         {/* Conversations List */}
         <div className="flex-1 overflow-y-auto">
           {loading && conversations.length === 0 ? (
-            <div className="p-6 text-center">
+            <div className="p-4 sm:p-6 text-center">
               <Loader2 className="h-6 w-6 animate-spin text-blue-600 mx-auto mb-2" />
-              <p className="text-sm text-gray-600">Loading conversations...</p>
+              <p className="text-xs sm:text-sm text-gray-600">Loading conversations...</p>
             </div>
           ) : filteredConversations.length === 0 ? (
-            <div className="p-6 text-center">
+            <div className="p-4 sm:p-6 text-center">
               <MessageSquare className="h-8 w-8 text-gray-400 mx-auto mb-3" />
-              <h3 className="text-sm font-medium text-gray-900 mb-1">
+              <h3 className="text-xs sm:text-sm font-medium text-gray-900 mb-1">
                 {searchTerm ? 'No conversations found' : 'No conversations yet'}
               </h3>
               <p className="text-xs text-gray-600 mb-3">
@@ -154,29 +154,29 @@ export default function ChatHistory() {
               {!searchTerm && (
                 <button
                   onClick={handleStartNewConversation}
-                  className="text-xs bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-blue-700 transition-colors"
+                  className="text-xs bg-blue-600 text-white px-2 sm:px-3 py-1 rounded-md hover:bg-blue-700 transition-colors"
                 >
                   Start First Conversation
                 </button>
               )}
             </div>
           ) : (
-            <div className="p-2">
+            <div className="p-2 sm:p-2">
               {filteredConversations.map((conversation) => (
                 <div
                   key={conversation.id}
                   onClick={() => handleSelectConversation(conversation)}
-                  className={`p-3 rounded-lg cursor-pointer transition-colors group mb-1 ${
+                  className={`p-2 sm:p-3 rounded-lg cursor-pointer transition-colors group mb-1 ${
                     selectedConversation?.id === conversation.id
                       ? 'bg-blue-50 border border-blue-200'
                       : 'hover:bg-gray-50'
                   }`}
                 >
                   <div className="flex items-start justify-between">
-                    <div className="flex-1 min-w-0">
+                    <div className="flex-1 min-w-0 pr-2">
                       <div className="flex items-center space-x-2 mb-1">
                         <MessageSquare className="h-4 w-4 text-blue-600 flex-shrink-0" />
-                        <h3 className="text-sm font-medium text-gray-900 truncate">
+                        <h3 className="text-xs sm:text-sm font-medium text-gray-900 truncate">
                           {conversation.title}
                         </h3>
                       </div>
@@ -189,7 +189,7 @@ export default function ChatHistory() {
                     
                     <button
                       onClick={(e) => handleDeleteConversation(conversation.id, e)}
-                      className="opacity-0 group-hover:opacity-100 p-1 text-red-400 hover:text-red-600 transition-all"
+                      className="opacity-0 group-hover:opacity-100 p-1 text-red-400 hover:text-red-600 transition-all flex-shrink-0"
                       title="Delete conversation"
                     >
                       <Trash2 className="h-3 w-3" />
@@ -203,7 +203,7 @@ export default function ChatHistory() {
 
         {/* Stats */}
         {conversations.length > 0 && (
-          <div className="p-4 border-t border-gray-200 bg-blue-50">
+          <div className="p-3 sm:p-4 border-t border-gray-200 bg-blue-50">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs font-medium text-blue-900">
@@ -220,17 +220,17 @@ export default function ChatHistory() {
       </div>
 
       {/* Right Side - Selected Conversation */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {selectedConversation ? (
           <>
             {/* Conversation Header */}
             <div className="bg-white border-b border-gray-200 p-4">
               <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-lg font-semibold text-gray-900">
+                <div className="min-w-0 flex-1">
+                  <h2 className="text-base sm:text-lg font-semibold text-gray-900 truncate">
                     {selectedConversation.title}
                   </h2>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-xs sm:text-sm text-gray-600">
                     Created: {new Date(selectedConversation.created_at).toLocaleDateString()} • 
                     Updated: {new Date(selectedConversation.updated_at).toLocaleDateString()}
                   </p>
@@ -239,16 +239,16 @@ export default function ChatHistory() {
             </div>
 
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4">
               {loading && currentConversation?.id === selectedConversation.id ? (
                 <div className="text-center py-8">
                   <Loader2 className="h-6 w-6 animate-spin text-blue-600 mx-auto mb-2" />
-                  <p className="text-sm text-gray-600">Loading messages...</p>
+                  <p className="text-xs sm:text-sm text-gray-600">Loading messages...</p>
                 </div>
               ) : messages.length === 0 ? (
                 <div className="text-center py-8">
                   <MessageSquare className="h-8 w-8 text-gray-400 mx-auto mb-3" />
-                  <p className="text-sm text-gray-600">No messages in this conversation</p>
+                  <p className="text-xs sm:text-sm text-gray-600">No messages in this conversation</p>
                 </div>
               ) : (
                 <AnimatePresence>
@@ -260,12 +260,12 @@ export default function ChatHistory() {
                       exit={{ opacity: 0, y: -20 }}
                       className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
                     >
-                      <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+                      <div className={`max-w-xs sm:max-w-sm lg:max-w-md px-3 sm:px-4 py-2 rounded-lg ${
                         message.type === 'user'
                           ? 'bg-blue-600 text-white'
                           : 'bg-white text-gray-900 shadow-sm border border-gray-200'
                       }`}>
-                        <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                        <p className="text-xs sm:text-sm whitespace-pre-wrap break-words">{message.content}</p>
                         <div className="flex items-center justify-between mt-1">
                           <span className={`text-xs ${
                             message.type === 'user' ? 'text-blue-100' : 'text-gray-500'
@@ -286,10 +286,10 @@ export default function ChatHistory() {
 
               {loading && currentConversation?.id === selectedConversation.id && messages.length > 0 && (
                 <div className="flex justify-start">
-                  <div className="bg-white border border-gray-200 rounded-lg px-4 py-2 shadow-sm">
+                  <div className="bg-white border border-gray-200 rounded-lg px-3 sm:px-4 py-2 shadow-sm">
                     <div className="flex items-center space-x-2">
                       <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
-                      <span className="text-sm text-gray-600">AI is thinking...</span>
+                      <span className="text-xs sm:text-sm text-gray-600">AI is thinking...</span>
                     </div>
                   </div>
                 </div>
@@ -300,19 +300,19 @@ export default function ChatHistory() {
 
             {/* Input Area */}
             <div className="bg-white border-t border-gray-200 p-4">
-              <form onSubmit={handleTextSubmit} className="flex space-x-2">
+              <form onSubmit={handleTextSubmit} className="flex space-x-2 items-end">
                 <input
                   type="text"
                   value={textInput}
                   onChange={(e) => setTextInput(e.target.value)}
                   placeholder="Continue the conversation..."
                   disabled={loading}
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50"
+                  className="flex-1 px-3 sm:px-4 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50"
                 />
                 <button
                   type="submit"
                   disabled={!textInput.trim() || loading}
-                  className="p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex-shrink-0"
                 >
                   <Send className="h-5 w-5" />
                 </button>
@@ -321,16 +321,16 @@ export default function ChatHistory() {
           </>
         ) : (
           /* No Conversation Selected */
-          <div className="flex-1 flex items-center justify-center bg-gray-50">
+          <div className="flex-1 flex items-center justify-center bg-gray-50 p-4">
             <div className="text-center">
               <div className="bg-blue-50 rounded-full p-4 w-16 h-16 mx-auto mb-4 flex items-center justify-center">
                 <MessageSquare className="h-8 w-8 text-blue-600" />
               </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Select a conversation</h3>
-              <p className="text-gray-600 mb-4">Choose a conversation from the left to view its messages</p>
+              <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-2">Select a conversation</h3>
+              <p className="text-sm sm:text-base text-gray-600 mb-4">Choose a conversation from the left to view its messages</p>
               <button
                 onClick={handleStartNewConversation}
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                className="bg-blue-600 text-white px-3 sm:px-4 py-2 text-sm sm:text-base rounded-lg hover:bg-blue-700 transition-colors"
               >
                 Start New Conversation
               </button>
