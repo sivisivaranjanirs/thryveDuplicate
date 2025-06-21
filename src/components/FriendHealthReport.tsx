@@ -14,7 +14,8 @@ import {
   ChevronDown,
   AlertTriangle,
   RefreshCw,
-  AlertCircle
+  AlertCircle,
+  Clock
 } from 'lucide-react';
 import { HealthMetric } from '../lib/supabase';
 import { useFriendHealthMetrics } from '../hooks/useFriendHealthMetrics';
