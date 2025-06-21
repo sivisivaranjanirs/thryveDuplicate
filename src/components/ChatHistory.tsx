@@ -100,11 +100,11 @@ export default function ChatHistory() {
   };
 
   return (
-    <div className="h-screen flex bg-gray-50 overflow-hidden">
+    <div className="h-screen w-full flex bg-gray-50 overflow-hidden">
       {/* Left Sidebar - Conversations List */}
-      <div className="w-full sm:w-1/3 bg-white border-r border-gray-200 flex flex-col min-w-0 max-w-sm">
+      <div className="w-full sm:w-80 lg:w-96 bg-white border-r border-gray-200 flex flex-col flex-shrink-0">
         {/* Header */}
-        <div className="p-4 sm:p-6 border-b border-gray-200">
+        <div className="p-4 sm:p-6 border-b border-gray-200 flex-shrink-0">
           <div className="flex items-center justify-between mb-4">
             <div className="min-w-0 flex-1">
               <h1 className="text-lg sm:text-xl font-bold text-gray-900 truncate">Chat History</h1>
@@ -203,7 +203,7 @@ export default function ChatHistory() {
 
         {/* Stats */}
         {conversations.length > 0 && (
-          <div className="p-3 sm:p-4 border-t border-gray-200 bg-blue-50">
+          <div className="p-3 sm:p-4 border-t border-gray-200 bg-blue-50 flex-shrink-0">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs font-medium text-blue-900">
@@ -220,11 +220,11 @@ export default function ChatHistory() {
       </div>
 
       {/* Right Side - Selected Conversation */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden w-0">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {selectedConversation ? (
           <>
             {/* Conversation Header */}
-            <div className="bg-white border-b border-gray-200 p-4">
+            <div className="bg-white border-b border-gray-200 p-4 flex-shrink-0">
               <div className="flex items-center justify-between">
                 <div className="min-w-0 flex-1">
                   <h2 className="text-base sm:text-lg font-semibold text-gray-900 truncate">
@@ -299,7 +299,7 @@ export default function ChatHistory() {
             </div>
 
             {/* Input Area */}
-            <div className="bg-white border-t border-gray-200 p-4">
+            <div className="bg-white border-t border-gray-200 p-4 flex-shrink-0">
               <form onSubmit={handleTextSubmit} className="flex space-x-2 items-end">
                 <input
                   type="text"
@@ -322,7 +322,7 @@ export default function ChatHistory() {
         ) : (
           /* No Conversation Selected */
           <div className="flex-1 flex items-center justify-center bg-gray-50 p-4">
-            <div className="text-center">
+            <div className="text-center max-w-sm">
               <div className="bg-blue-50 rounded-full p-4 w-16 h-16 mx-auto mb-4 flex items-center justify-center">
                 <MessageSquare className="h-8 w-8 text-blue-600" />
               </div>
