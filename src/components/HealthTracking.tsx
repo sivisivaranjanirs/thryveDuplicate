@@ -162,13 +162,13 @@ export default function HealthTracking() {
     <div className="p-6 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
+        <div className="flex-1 min-w-0">
           <h1 className="text-2xl font-bold text-gray-900">Health Tracking</h1>
           <p className="text-gray-600">Monitor and track your health metrics</p>
         </div>
         <button
           onClick={() => setShowAddForm(true)}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2"
+          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2 flex-shrink-0 ml-4"
         >
           <Plus className="h-5 w-5" />
           <span>Add Reading</span>
