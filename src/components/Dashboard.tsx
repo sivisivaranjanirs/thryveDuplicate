@@ -104,7 +104,7 @@ export default function Dashboard() {
     <div className="p-6 space-y-6">
       {/* Welcome Section */}
       <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl p-6 text-white">
-        <h1 className="text-2xl font-bold mb-2">Welcome back, {firstName}!</h1>
+        <h1 className="text-2xl font-bold mb-2">Welcome, {firstName}!</h1>
         <p className="text-blue-100">Here's your health overview for today</p>
       </div>
 
