@@ -488,6 +488,5 @@ export default function FriendsManagement() {
         </div>
       )}
     </div>
-    </div>
   );
 }
