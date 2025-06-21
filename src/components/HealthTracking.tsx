@@ -5,7 +5,7 @@ import {
   Activity, 
   Thermometer, 
   Scale, 
-  Clock,
+  Droplet,
   Calendar,
   TrendingUp,
   Edit3,
@@ -16,10 +16,10 @@ import { useHealthMetrics } from '../hooks/useHealthMetrics';
 
 const healthCategories = [
   { id: 'blood_pressure', name: 'Blood Pressure', icon: Heart, unit: 'mmHg', color: 'red', placeholder: '120/80' },
+  { id: 'blood_glucose', name: 'Blood Glucose', icon: Droplet, unit: 'mg/dL', color: 'pink', placeholder: '100' },
   { id: 'heart_rate', name: 'Heart Rate', icon: Activity, unit: 'bpm', color: 'blue', placeholder: '72' },
   { id: 'temperature', name: 'Temperature', icon: Thermometer, unit: '°F', color: 'orange', placeholder: '98.6' },
   { id: 'weight', name: 'Weight', icon: Scale, unit: 'lbs', color: 'green', placeholder: '150' },
-  { id: 'sleep', name: 'Sleep', icon: Clock, unit: 'hours', color: 'purple', placeholder: '8' },
 ];
 
 export default function HealthTracking() {

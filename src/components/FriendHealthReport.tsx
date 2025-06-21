@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   ArrowLeft, 
   Calendar, 
-  Clock, 
+  Droplet,
   Heart, 
   Activity, 
   Thermometer, 
@@ -29,26 +29,26 @@ interface FriendHealthReportProps {
 
 const metricIcons = {
   blood_pressure: Heart,
+  blood_glucose: Droplet,
   heart_rate: Activity,
   temperature: Thermometer,
   weight: Scale,
-  sleep: Clock
 };
 
 const metricColors = {
   blood_pressure: 'red',
+  blood_glucose: 'pink',
   heart_rate: 'blue',
   temperature: 'orange',
   weight: 'green',
-  sleep: 'purple'
 };
 
 const metricLabels = {
   blood_pressure: 'Blood Pressure',
+  blood_glucose: 'Blood Glucose',
   heart_rate: 'Heart Rate',
   temperature: 'Temperature',
   weight: 'Weight',
-  sleep: 'Sleep'
 };
 
 // Helper function to get icon with fallback

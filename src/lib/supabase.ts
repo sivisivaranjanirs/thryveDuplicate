@@ -25,7 +25,7 @@ export interface UserProfile {
 export interface HealthMetric {
   id: string;
   user_id: string;
-  metric_type: 'blood_pressure' | 'heart_rate' | 'temperature' | 'weight' | 'sleep';
+  metric_type: 'blood_pressure' | 'heart_rate' | 'temperature' | 'weight' | 'blood_glucose';
   value: string;
   unit: string;
   notes?: string;

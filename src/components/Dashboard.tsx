@@ -6,7 +6,7 @@ import {
   TrendingUp, 
   AlertCircle,
   CheckCircle,
-  Clock,
+  Droplet,
   Thermometer,
   Scale,
   Loader2,
@@ -17,18 +17,18 @@ import { useAuth } from '../hooks/useAuth';
 
 const metricIcons = {
   blood_pressure: Heart,
+  blood_glucose: Droplet,
   heart_rate: Activity,
   temperature: Thermometer,
   weight: Scale,
-  sleep: Clock
 };
 
 const metricColors = {
   blood_pressure: 'red',
+  blood_glucose: 'pink',
   heart_rate: 'blue',
   temperature: 'orange',
   weight: 'green',
-  sleep: 'purple'
 };
 
 // Helper function to get icon with fallback
@@ -52,10 +52,10 @@ export default function Dashboard() {
 
   const latestMetrics = [
     'blood_pressure',
+    'blood_glucose',
     'heart_rate', 
     'temperature',
     'weight',
-    'sleep'
   ].map(type => {
     const metric = getLatestMetric(type);
     const Icon = getMetricIcon(type);
