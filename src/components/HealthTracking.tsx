@@ -15,11 +15,11 @@ import {
 import { useHealthMetrics } from '../hooks/useHealthMetrics';
 
 const healthCategories = [
-  { id: 'blood_pressure', name: 'Blood Pressure', icon: Heart, unit: 'mmHg', color: 'red', placeholder: '120/80' },
-  { id: 'blood_glucose', name: 'Blood Glucose', icon: Droplet, unit: 'mg/dL', color: 'pink', placeholder: '100' },
-  { id: 'heart_rate', name: 'Heart Rate', icon: Activity, unit: 'bpm', color: 'blue', placeholder: '72' },
-  { id: 'temperature', name: 'Temperature', icon: Thermometer, unit: '°F', color: 'orange', placeholder: '98.6' },
-  { id: 'weight', name: 'Weight', icon: Scale, unit: 'lbs', color: 'green', placeholder: '150' },
+  { id: 'blood_pressure', name: 'Blood Pressure', shortName: 'BP', icon: Heart, unit: 'mmHg', color: 'red', placeholder: '120/80' },
+  { id: 'blood_glucose', name: 'Blood Glucose', shortName: 'BG', icon: Droplet, unit: 'mg/dL', color: 'pink', placeholder: '100' },
+  { id: 'heart_rate', name: 'Heart Rate', shortName: 'HR', icon: Activity, unit: 'bpm', color: 'blue', placeholder: '72' },
+  { id: 'temperature', name: 'Temperature', shortName: 'Temp', icon: Thermometer, unit: '°F', color: 'orange', placeholder: '98.6' },
+  { id: 'weight', name: 'Weight', shortName: 'Weight', icon: Scale, unit: 'lbs', color: 'green', placeholder: '150' },
 ];
 
 interface MetricFormData {
@@ -159,143 +159,147 @@ export default function HealthTracking() {
   }
 
   return (
-    <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
-      {/* Header - Mobile Optimized */}
-      <div className="space-y-4">
-        <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
-          <div className="flex-1 min-w-0">
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Health Tracking</h1>
-            <p className="text-sm sm:text-base text-gray-600">Monitor and track your health metrics</p>
-          </div>
-          <button
-            onClick={() => setShowAddForm(true)}
-            className="w-full sm:w-auto bg-blue-600 text-white px-4 py-3 sm:py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center space-x-2 font-medium"
-          >
-            <Plus className="h-5 w-5" />
-            <span>Add Reading</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Category Tabs - Mobile Optimized */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-        <div className="border-b border-gray-200 overflow-hidden">
-          <div className="overflow-x-auto scrollbar-hide">
-            <nav className="flex space-x-4 sm:space-x-8 px-4 sm:px-6 min-w-max" aria-label="Tabs">
-              {healthCategories.map((category) => {
-                const Icon = category.icon;
-                const isActive = selectedCategory === category.id;
-                
-                return (
-                  <button
-                    key={category.id}
-                    onClick={() => setSelectedCategory(category.id)}
-                    className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors whitespace-nowrap ${
-                      isActive
-                        ? 'border-blue-500 text-blue-600'
-                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                    }`}
-                  >
-                    <div className="flex items-center space-x-2">
-                      <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
-                      <span className="hidden sm:inline">{category.name}</span>
-                      <span className="sm:hidden">{category.name.split(' ')[0]}</span>
-                    </div>
-                  </button>
-                );
-              })}
-            </nav>
+    <div className="min-h-screen w-full overflow-x-hidden">
+      <div className="max-w-full px-4 sm:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6">
+        {/* Header - Mobile Optimized */}
+        <div className="w-full">
+          <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
+            <div className="flex-1 min-w-0">
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-900 truncate">Health Tracking</h1>
+              <p className="text-sm sm:text-base text-gray-600">Monitor and track your health metrics</p>
+            </div>
+            <div className="w-full sm:w-auto">
+              <button
+                onClick={() => setShowAddForm(true)}
+                className="w-full sm:w-auto bg-blue-600 text-white px-4 py-3 sm:py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center space-x-2 font-medium"
+              >
+                <Plus className="h-5 w-5 flex-shrink-0" />
+                <span>Add Reading</span>
+              </button>
+            </div>
           </div>
         </div>
 
-        {/* Content */}
-        <div className="p-4 sm:p-6">
-          {/* Latest Reading */}
-          {categoryRecords.length > 0 && (
-            <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-              <div className="flex items-center justify-between">
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm text-gray-600">Latest Reading</p>
-                  <p className="text-xl sm:text-2xl font-bold text-gray-900 truncate">
-                    {categoryRecords[0].value} {categoryRecords[0].unit}
-                  </p>
-                  <p className="text-xs sm:text-sm text-gray-500">
-                    {new Date(categoryRecords[0].recorded_at).toLocaleDateString()} at{' '}
-                    {new Date(categoryRecords[0].recorded_at).toLocaleTimeString([], { 
-                      hour: '2-digit', 
-                      minute: '2-digit' 
-                    })}
-                  </p>
-                </div>
-                <div className={`p-2 sm:p-3 rounded-full bg-${selectedCategoryData?.color}-100 flex-shrink-0`}>
-                  {selectedCategoryData && (
-                    <selectedCategoryData.icon className={`h-6 w-6 sm:h-8 sm:w-8 text-${selectedCategoryData.color}-600`} />
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Records List */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-base sm:text-lg font-medium text-gray-900">Recent Readings</h3>
-              {categoryRecords.length > 0 && (
-                <button className="text-blue-600 hover:text-blue-700 text-xs sm:text-sm font-medium flex items-center space-x-1">
-                  <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4" />
-                  <span className="hidden sm:inline">View Trends</span>
-                  <span className="sm:hidden">Trends</span>
-                </button>
-              )}
-            </div>
-
-            {categoryRecords.length === 0 ? (
-              <div className="text-center py-8">
-                <div className="text-gray-400 mb-2">
-                  {selectedCategoryData && <selectedCategoryData.icon className="h-10 w-10 sm:h-12 sm:w-12 mx-auto" />}
-                </div>
-                <p className="text-gray-500 text-sm sm:text-base">No readings recorded yet</p>
-                <button
-                  onClick={() => setShowAddForm(true)}
-                  className="mt-2 text-blue-600 hover:text-blue-700 font-medium text-sm sm:text-base"
-                >
-                  Add your first reading
-                </button>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {categoryRecords.map((record) => (
-                  <div key={record.id} className="flex items-center justify-between p-3 sm:p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-3 space-y-1 sm:space-y-0">
-                        <div className="font-medium text-gray-900 text-sm sm:text-base">
-                          {record.value} {record.unit}
-                        </div>
-                        <div className="text-xs sm:text-sm text-gray-500">
-                          {new Date(record.recorded_at).toLocaleDateString()} at{' '}
-                          {new Date(record.recorded_at).toLocaleTimeString([], { 
-                            hour: '2-digit', 
-                            minute: '2-digit' 
-                          })}
-                        </div>
+        {/* Category Tabs - Mobile Optimized */}
+        <div className="w-full bg-white rounded-lg shadow-sm border border-gray-200">
+          <div className="border-b border-gray-200">
+            <div className="w-full overflow-x-auto">
+              <nav className="flex px-4 sm:px-6" aria-label="Tabs">
+                {healthCategories.map((category, index) => {
+                  const Icon = category.icon;
+                  const isActive = selectedCategory === category.id;
+                  
+                  return (
+                    <button
+                      key={category.id}
+                      onClick={() => setSelectedCategory(category.id)}
+                      className={`flex-shrink-0 py-4 px-3 sm:px-4 border-b-2 font-medium text-xs sm:text-sm transition-colors ${
+                        isActive
+                          ? 'border-blue-500 text-blue-600'
+                          : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      } ${index < healthCategories.length - 1 ? 'mr-2 sm:mr-6' : ''}`}
+                    >
+                      <div className="flex flex-col items-center space-y-1 sm:flex-row sm:space-y-0 sm:space-x-2">
+                        <Icon className="h-4 w-4 flex-shrink-0" />
+                        <span className="hidden sm:inline whitespace-nowrap">{category.name}</span>
+                        <span className="sm:hidden text-xs whitespace-nowrap">{category.shortName}</span>
                       </div>
-                      {record.notes && (
-                        <p className="text-xs sm:text-sm text-gray-600 mt-1 line-clamp-2">{record.notes}</p>
-                      )}
-                    </div>
-                    <div className="flex items-center space-x-2 flex-shrink-0 ml-2">
-                      <button 
-                        onClick={() => handleDeleteMetric(record.id)}
-                        className="p-2 text-red-400 hover:text-red-600 transition-colors"
-                        title="Delete reading"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </div>
+                    </button>
+                  );
+                })}
+              </nav>
+            </div>
+          </div>
+
+          {/* Content */}
+          <div className="p-4 sm:p-6">
+            {/* Latest Reading */}
+            {categoryRecords.length > 0 && (
+              <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1 min-w-0 pr-4">
+                    <p className="text-sm text-gray-600">Latest Reading</p>
+                    <p className="text-xl sm:text-2xl font-bold text-gray-900 break-words">
+                      {categoryRecords[0].value} {categoryRecords[0].unit}
+                    </p>
+                    <p className="text-xs sm:text-sm text-gray-500 break-words">
+                      {new Date(categoryRecords[0].recorded_at).toLocaleDateString()} at{' '}
+                      {new Date(categoryRecords[0].recorded_at).toLocaleTimeString([], { 
+                        hour: '2-digit', 
+                        minute: '2-digit' 
+                      })}
+                    </p>
                   </div>
-                ))}
+                  <div className={`p-2 sm:p-3 rounded-full bg-${selectedCategoryData?.color}-100 flex-shrink-0`}>
+                    {selectedCategoryData && (
+                      <selectedCategoryData.icon className={`h-6 w-6 sm:h-8 sm:w-8 text-${selectedCategoryData.color}-600`} />
+                    )}
+                  </div>
+                </div>
               </div>
             )}
+
+            {/* Records List */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-base sm:text-lg font-medium text-gray-900">Recent Readings</h3>
+                {categoryRecords.length > 0 && (
+                  <button className="text-blue-600 hover:text-blue-700 text-xs sm:text-sm font-medium flex items-center space-x-1 flex-shrink-0">
+                    <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <span className="hidden sm:inline">View Trends</span>
+                    <span className="sm:hidden">Trends</span>
+                  </button>
+                )}
+              </div>
+
+              {categoryRecords.length === 0 ? (
+                <div className="text-center py-8">
+                  <div className="text-gray-400 mb-2">
+                    {selectedCategoryData && <selectedCategoryData.icon className="h-10 w-10 sm:h-12 sm:w-12 mx-auto" />}
+                  </div>
+                  <p className="text-gray-500 text-sm sm:text-base">No readings recorded yet</p>
+                  <button
+                    onClick={() => setShowAddForm(true)}
+                    className="mt-2 text-blue-600 hover:text-blue-700 font-medium text-sm sm:text-base"
+                  >
+                    Add your first reading
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {categoryRecords.map((record) => (
+                    <div key={record.id} className="flex items-start justify-between p-3 sm:p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                      <div className="flex-1 min-w-0 pr-2">
+                        <div className="flex flex-col space-y-1">
+                          <div className="font-medium text-gray-900 text-sm sm:text-base break-words">
+                            {record.value} {record.unit}
+                          </div>
+                          <div className="text-xs sm:text-sm text-gray-500 break-words">
+                            {new Date(record.recorded_at).toLocaleDateString()} at{' '}
+                            {new Date(record.recorded_at).toLocaleTimeString([], { 
+                              hour: '2-digit', 
+                              minute: '2-digit' 
+                            })}
+                          </div>
+                        </div>
+                        {record.notes && (
+                          <p className="text-xs sm:text-sm text-gray-600 mt-1 break-words">{record.notes}</p>
+                        )}
+                      </div>
+                      <div className="flex-shrink-0">
+                        <button 
+                          onClick={() => handleDeleteMetric(record.id)}
+                          className="p-2 text-red-400 hover:text-red-600 transition-colors"
+                          title="Delete reading"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -401,7 +405,7 @@ export default function HealthTracking() {
                     'Save Readings'
                   )}
                 </button>
-              </div>
+                </div>
             </form>
           </div>
         </div>
