@@ -100,9 +100,9 @@ export default function ChatHistory() {
   };
 
   return (
-    <div className="h-full flex bg-gray-50 overflow-hidden">
+    <div className="h-screen flex bg-gray-50 overflow-hidden">
       {/* Left Sidebar - Conversations List */}
-      <div className="w-full sm:w-1/3 bg-white border-r border-gray-200 flex flex-col min-w-0">
+      <div className="w-full sm:w-1/3 bg-white border-r border-gray-200 flex flex-col min-w-0 max-w-sm">
         {/* Header */}
         <div className="p-4 sm:p-6 border-b border-gray-200">
           <div className="flex items-center justify-between mb-4">
@@ -220,7 +220,7 @@ export default function ChatHistory() {
       </div>
 
       {/* Right Side - Selected Conversation */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden w-0">
         {selectedConversation ? (
           <>
             {/* Conversation Header */}

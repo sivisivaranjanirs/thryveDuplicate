@@ -146,10 +146,10 @@ export default function FriendsManagement() {
   }
 
   return (
-    <div className="min-h-screen w-full overflow-x-hidden">
-      <div className="max-w-full px-4 sm:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6">
+    <div className="h-screen w-full overflow-hidden">
+      <div className="h-full flex flex-col px-4 sm:px-6 py-4 sm:py-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between mb-4 sm:mb-6 flex-shrink-0">
         <div className="min-w-0 flex-1 pr-4">
           <h1 className="text-xl sm:text-2xl font-bold text-gray-900 truncate">Reading Access Management</h1>
           <p className="text-sm sm:text-base text-gray-600">Request access to view others' health readings</p>
@@ -165,7 +165,7 @@ export default function FriendsManagement() {
       </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-3 sm:p-4">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-3 sm:p-4 mb-4 sm:mb-6 flex-shrink-0">
           <div className="flex items-center">
             <AlertCircle className="h-5 w-5 text-red-600 mr-2" />
             <p className="text-sm sm:text-base text-red-700 break-words">{error}</p>
@@ -174,13 +174,13 @@ export default function FriendsManagement() {
       )}
 
       {/* Tabs */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 flex-1 flex flex-col overflow-hidden">
         <div className="border-b border-gray-200">
-          <div className="w-full overflow-x-auto">
+          <div className="w-full overflow-x-auto flex-shrink-0">
             <nav className="flex px-4 sm:px-6" aria-label="Tabs">
             <button
               onClick={() => setActiveTab('friends')}
-              className={`flex-shrink-0 py-4 px-2 sm:px-4 border-b-2 font-medium text-xs sm:text-sm transition-colors mr-4 sm:mr-8 ${
+              className={`flex-shrink-0 py-4 px-3 sm:px-4 border-b-2 font-medium text-xs sm:text-sm transition-colors mr-4 sm:mr-8 ${
                 activeTab === 'friends'
                   ? 'border-blue-500 text-blue-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
@@ -193,7 +193,7 @@ export default function FriendsManagement() {
             </button>
             <button
               onClick={() => setActiveTab('my-access')}
-              className={`flex-shrink-0 py-4 px-2 sm:px-4 border-b-2 font-medium text-xs sm:text-sm transition-colors mr-4 sm:mr-8 ${
+              className={`flex-shrink-0 py-4 px-3 sm:px-4 border-b-2 font-medium text-xs sm:text-sm transition-colors mr-4 sm:mr-8 ${
                 activeTab === 'my-access'
                   ? 'border-green-500 text-green-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
@@ -206,7 +206,7 @@ export default function FriendsManagement() {
             </button>
             <button
               onClick={() => setActiveTab('requests')}
-              className={`flex-shrink-0 py-4 px-2 sm:px-4 border-b-2 font-medium text-xs sm:text-sm transition-colors ${
+              className={`flex-shrink-0 py-4 px-3 sm:px-4 border-b-2 font-medium text-xs sm:text-sm transition-colors ${
                 activeTab === 'requests'
                   ? 'border-blue-500 text-blue-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
@@ -222,7 +222,7 @@ export default function FriendsManagement() {
         </div>
 
         {/* Tab Content */}
-        <div className="p-4 sm:p-6">
+        <div className="p-4 sm:p-6 flex-1 overflow-y-auto">
           {activeTab === 'friends' && (
             <div className="space-y-4">
               {friends.length === 0 ? (
