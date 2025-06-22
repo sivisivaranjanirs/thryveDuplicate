@@ -179,10 +179,10 @@ export default function VoiceChat() {
   };
 
   return (
-    <div className="flex h-full bg-gray-50">
+    <div className="flex min-h-screen bg-gray-50">
       {/* Conversations Sidebar */}
-      <div className={`${showConversations ? 'w-80' : 'w-0'} transition-all duration-300 overflow-hidden bg-white border-r border-gray-200`}>
-        <div className="p-4 border-b border-gray-200">
+      <div className={`${showConversations ? 'w-64 sm:w-80' : 'w-0'} transition-all duration-300 overflow-hidden bg-white border-r border-gray-200 fixed sm:relative h-full z-20`}>
+        <div className="p-4 border-b border-gray-200 flex items-center justify-between">
           <div className="flex items-center justify-between">
             <h3 className="font-medium text-gray-900">Conversations</h3>
             <button
@@ -193,9 +193,15 @@ export default function VoiceChat() {
               <Plus className="h-4 w-4" />
             </button>
           </div>
+          <button 
+            onClick={() => setShowConversations(false)}
+            className="sm:hidden p-2 text-gray-500 hover:text-gray-700"
+          >
+            <X className="h-4 w-4" />
+          </button>
         </div>
         
-        <div className="overflow-y-auto h-full">
+        <div className="overflow-y-auto h-[calc(100%-57px)]">
           {conversations.length === 0 ? (
             <div className="p-4 text-center text-gray-500">
               <MessageSquare className="h-8 w-8 mx-auto mb-2 text-gray-300" />
@@ -204,12 +210,12 @@ export default function VoiceChat() {
           ) : (
             <div className="p-2">
               {conversations.map((conversation) => (
-                <div
+                  <div className={`max-w-[75%] sm:max-w-sm md:max-w-md px-4 py-2 rounded-lg ${
                   key={conversation.id}
                   onClick={() => switchConversation(conversation)}
                   className={`p-3 rounded-lg cursor-pointer transition-colors group ${
                     currentConversation?.id === conversation.id
-                      ? 'bg-blue-50 border border-blue-200'
+                    <p className="text-sm whitespace-pre-wrap break-words overflow-hidden">{message.content}</p>
                       : 'hover:bg-gray-50'
                   }`}
                 >
@@ -238,19 +244,20 @@ export default function VoiceChat() {
       </div>
 
       {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col w-full">
         {/* Header */}
-        <div className="bg-white border-b border-gray-200 p-4">
+        <div className="bg-white border-b border-gray-200 p-4 sm:p-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <button
                 onClick={() => setShowConversations(!showConversations)}
-                className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors" 
+                title="Conversations"
               >
                 <MessageSquare className="h-5 w-5" />
               </button>
               <div>
-                <h2 className="text-lg font-semibold text-gray-900">
+                <h2 className="text-lg sm:text-xl font-semibold text-gray-900">
                   {currentConversation ? currentConversation.title : 'New Conversation'}
                 </h2>
                 <p className="text-sm text-gray-600">AI Health Assistant</p>
@@ -268,20 +275,20 @@ export default function VoiceChat() {
         </div>
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        <div className="flex-1 p-4 sm:p-6 space-y-4">
           {isLoadingConversation ? (
             <div className="text-center py-8">
               <Loader2 className="h-8 w-8 animate-spin text-blue-600 mx-auto mb-4" />
               <p className="text-gray-600">Loading conversation...</p>
             </div>
           ) : messages.length === 0 && !loading ? (
-            <div className="text-center py-8">
+            <div className="text-center py-10">
               <div className="bg-blue-50 rounded-full p-4 w-16 h-16 mx-auto mb-4 flex items-center justify-center">
                 <MessageSquare className="h-8 w-8 text-blue-600" />
               </div>
               <h3 className="text-lg font-medium text-gray-900 mb-2">Start a conversation</h3>
               <p className="text-gray-600 mb-4">Ask me anything about your health and wellness</p>
-              <div className="flex flex-wrap gap-2 justify-center">
+              <div className="flex flex-wrap gap-2 justify-center px-4">
                 <button
                   onClick={() => handleSendMessage("How can I track my blood pressure?")}
                   className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm hover:bg-blue-200 transition-colors"
@@ -357,7 +364,7 @@ export default function VoiceChat() {
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.8 }}
-              className="mx-4 mb-2 p-3 bg-blue-50 border border-blue-200 rounded-lg"
+              className="mx-4 sm:mx-6 mb-2 p-3 bg-blue-50 border border-blue-200 rounded-lg"
             >
               <div className="flex items-center space-x-2">
                 <div className="flex space-x-1">
@@ -373,13 +380,13 @@ export default function VoiceChat() {
 
         {/* Error Display */}
         {error && (
-          <div className="mx-4 mb-2 p-3 bg-red-50 border border-red-200 rounded-lg">
+          <div className="mx-4 sm:mx-6 mb-2 p-3 bg-red-50 border border-red-200 rounded-lg">
             <p className="text-sm text-red-700">{error}</p>
           </div>
         )}
 
         {/* Input Area */}
-        <div className="bg-white border-t border-gray-200 p-4">
+        <div className="bg-white border-t border-gray-200 p-4 sm:p-6">
           <div className="flex items-center space-x-2">
             <button
               onClick={isRecording ? handleStopRecording : handleStartRecording}

@@ -159,8 +159,8 @@ export default function HealthTracking() {
   }
 
   return (
-    <div className="min-h-screen w-full overflow-x-hidden">
-      <div className="max-w-full px-4 sm:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6">
+    <div className="min-h-screen w-full">
+      <div className="max-w-full px-4 sm:px-6 py-4 sm:py-6 space-y-5 sm:space-y-6">
         {/* Header - Mobile Optimized */}
         <div className="w-full">
           <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
@@ -171,7 +171,7 @@ export default function HealthTracking() {
             <div className="w-full sm:w-auto">
               <button
                 onClick={() => setShowAddForm(true)}
-                className="w-full sm:w-auto bg-blue-600 text-white px-4 py-3 sm:py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center space-x-2 font-medium"
+                className="w-full sm:w-auto bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center space-x-2 font-medium"
               >
                 <Plus className="h-5 w-5 flex-shrink-0" />
                 <span>Add Reading</span>
@@ -183,8 +183,8 @@ export default function HealthTracking() {
         {/* Category Tabs - Mobile Optimized */}
         <div className="w-full bg-white rounded-lg shadow-sm border border-gray-200">
           <div className="border-b border-gray-200">
-            <div className="w-full overflow-x-auto">
-              <nav className="flex px-4 sm:px-6" aria-label="Tabs">
+            <div className="w-full overflow-x-auto scrollbar-hide">
+              <nav className="flex px-4 sm:px-6 py-1" aria-label="Tabs">
                 {healthCategories.map((category, index) => {
                   const Icon = category.icon;
                   const isActive = selectedCategory === category.id;
@@ -193,16 +193,16 @@ export default function HealthTracking() {
                     <button
                       key={category.id}
                       onClick={() => setSelectedCategory(category.id)}
-                      className={`flex-shrink-0 py-4 px-3 sm:px-4 border-b-2 font-medium text-xs sm:text-sm transition-colors ${
+                      className={`flex-shrink-0 py-3 px-3 sm:px-4 border-b-2 font-medium text-xs sm:text-sm transition-colors ${
                         isActive
                           ? 'border-blue-500 text-blue-600'
                           : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                       } ${index < healthCategories.length - 1 ? 'mr-2 sm:mr-6' : ''}`}
                     >
-                      <div className="flex flex-col items-center space-y-1 sm:flex-row sm:space-y-0 sm:space-x-2">
+                      <div className="flex items-center space-x-2">
                         <Icon className="h-4 w-4 flex-shrink-0" />
-                        <span className="hidden sm:inline whitespace-nowrap">{category.name}</span>
-                        <span className="sm:hidden text-xs whitespace-nowrap">{category.shortName}</span>
+                        <span className="hidden sm:inline">{category.name}</span>
+                        <span className="sm:hidden">{category.shortName}</span>
                       </div>
                     </button>
                   );
@@ -212,14 +212,14 @@ export default function HealthTracking() {
           </div>
 
           {/* Content */}
-          <div className="p-4 sm:p-6">
+          <div className="p-4 sm:p-6 overflow-hidden">
             {/* Latest Reading */}
             {categoryRecords.length > 0 && (
-              <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+              <div className="mb-6 p-4 bg-gray-50 rounded-lg overflow-hidden">
                 <div className="flex items-center justify-between">
                   <div className="flex-1 min-w-0 pr-4">
                     <p className="text-sm text-gray-600">Latest Reading</p>
-                    <p className="text-xl sm:text-2xl font-bold text-gray-900 break-words">
+                    <p className="text-xl sm:text-2xl font-bold text-gray-900 break-words overflow-hidden">
                       {categoryRecords[0].value} {categoryRecords[0].unit}
                     </p>
                     <p className="text-xs sm:text-sm text-gray-500 break-words">
@@ -253,7 +253,7 @@ export default function HealthTracking() {
               </div>
 
               {categoryRecords.length === 0 ? (
-                <div className="text-center py-8">
+                <div className="text-center py-10">
                   <div className="text-gray-400 mb-2">
                     {selectedCategoryData && <selectedCategoryData.icon className="h-10 w-10 sm:h-12 sm:w-12 mx-auto" />}
                   </div>
@@ -266,12 +266,12 @@ export default function HealthTracking() {
                   </button>
                 </div>
               ) : (
-                <div className="space-y-3">
+                <div className="space-y-3 overflow-hidden">
                   {categoryRecords.map((record) => (
-                    <div key={record.id} className="flex items-start justify-between p-3 sm:p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-                      <div className="flex-1 min-w-0 pr-2">
+                    <div key={record.id} className="flex items-start justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                      <div className="flex-1 min-w-0 pr-3">
                         <div className="flex flex-col space-y-1">
-                          <div className="font-medium text-gray-900 text-sm sm:text-base break-words">
+                          <div className="font-medium text-gray-900 text-sm sm:text-base break-words overflow-hidden">
                             {record.value} {record.unit}
                           </div>
                           <div className="text-xs sm:text-sm text-gray-500 break-words">
@@ -283,7 +283,7 @@ export default function HealthTracking() {
                           </div>
                         </div>
                         {record.notes && (
-                          <p className="text-xs sm:text-sm text-gray-600 mt-1 break-words">{record.notes}</p>
+                          <p className="text-xs sm:text-sm text-gray-600 mt-1 break-words overflow-hidden">{record.notes}</p>
                         )}
                       </div>
                       <div className="flex-shrink-0">
@@ -308,7 +308,7 @@ export default function HealthTracking() {
       {showAddForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white border-b border-gray-200 px-4 sm:px-6 py-4 rounded-t-lg">
+            <div className="sticky top-0 bg-white border-b border-gray-200 px-4 sm:px-6 py-4 rounded-t-lg z-10">
               <h3 className="text-lg font-medium text-gray-900">Add Health Readings</h3>
               <p className="text-sm text-gray-600 mt-1">Enter values for any or all health metrics</p>
             </div>
@@ -379,7 +379,7 @@ export default function HealthTracking() {
               </div>
 
               {/* Form Actions */}
-              <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3 pt-4 border-t border-gray-200">
+              <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3 pt-4 border-t border-gray-200 sticky bottom-0 bg-white pb-4 z-10">
                 <button
                   type="button"
                   onClick={() => {

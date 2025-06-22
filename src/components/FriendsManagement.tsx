@@ -131,17 +131,17 @@ export default function FriendsManagement() {
   }
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden bg-gray-50">
+    <div className="min-h-screen flex flex-col bg-gray-50">
       {/* Fixed Header */}
-      <div className="flex-shrink-0 p-3 sm:p-4 bg-white border-b border-gray-200">
+      <div className="flex-shrink-0 p-4 sm:p-6 bg-white border-b border-gray-200">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
           <div className="min-w-0 flex-1 pr-2">
-            <h1 className="text-lg sm:text-xl font-bold text-gray-900 truncate">Access Management</h1>
-            <p className="text-xs sm:text-sm text-gray-600 truncate">Request access to view others' health readings</p>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Access Management</h1>
+            <p className="text-sm sm:text-base text-gray-600">Request access to view others' health readings</p>
           </div>
           <button
             onClick={() => setShowAddFriend(true)}
-            className="w-full sm:w-auto bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center space-x-2 flex-shrink-0 text-sm"
+            className="w-full sm:w-auto bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center space-x-2 flex-shrink-0 text-sm"
           >
             <UserPlus className="h-4 w-4" />
             <span className="hidden sm:inline">Request Access</span>
@@ -150,7 +150,7 @@ export default function FriendsManagement() {
         </div>
 
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-3 mt-3">
+          <div className="bg-red-50 border border-red-200 rounded-lg p-3 mt-4">
             <div className="flex items-center">
               <AlertCircle className="h-4 w-4 text-red-600 mr-2 flex-shrink-0" />
               <p className="text-red-700 text-xs truncate">{error}</p>
@@ -160,22 +160,22 @@ export default function FriendsManagement() {
       </div>
 
       {/* Scrollable Content Area with Fixed Height */}
-      <div className="flex-1 overflow-y-auto">
-        <div className="p-3 sm:p-4">
-          <div className="max-w-4xl mx-auto space-y-2">
+      <div className="flex-1">
+        <div className="p-4 sm:p-6">
+          <div className="max-w-4xl mx-auto space-y-4">
             {/* I Can View Section */}
             <div className="bg-white rounded-lg shadow-sm border border-gray-200">
               <button
                 onClick={() => toggleAccordion('friends')}
-                className="w-full px-3 sm:px-4 py-3 flex items-center justify-between text-left hover:bg-gray-50 transition-colors"
+                className="w-full px-4 py-4 flex items-center justify-between text-left hover:bg-gray-50 transition-colors"
               >
                 <div className="flex items-center space-x-2 min-w-0 flex-1">
                   <div className="p-1.5 bg-blue-100 rounded-lg flex-shrink-0">
                     <Eye className="h-4 w-4 text-blue-600" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <h3 className="text-sm sm:text-base font-semibold text-gray-900 truncate">I Can View</h3>
-                    <p className="text-xs text-gray-600 truncate">Health data I have access to ({friends.length})</p>
+                    <h3 className="text-base font-semibold text-gray-900">I Can View</h3>
+                    <p className="text-xs text-gray-600">Health data I have access to ({friends.length})</p>
                   </div>
                 </div>
                 <div className="flex-shrink-0 ml-2">
@@ -196,9 +196,9 @@ export default function FriendsManagement() {
                     transition={{ duration: 0.2 }}
                     className="overflow-hidden"
                   >
-                    <div className="px-3 sm:px-4 pb-3 border-t border-gray-200">
+                    <div className="px-4 pb-4 border-t border-gray-200">
                       {friends.length === 0 ? (
-                        <div className="text-center py-4">
+                        <div className="text-center py-6">
                           <Eye className="h-8 w-8 text-gray-400 mx-auto mb-2" />
                           <h3 className="text-sm font-medium text-gray-900 mb-1">No reading access yet</h3>
                           <p className="text-xs text-gray-600 mb-3">Request access to view others' health readings</p>
@@ -210,7 +210,7 @@ export default function FriendsManagement() {
                           </button>
                         </div>
                       ) : (
-                        <div className="space-y-2 mt-3 max-h-48 overflow-y-auto">
+                        <div className="space-y-3 mt-4 max-h-60 overflow-y-auto">
                           {friends.map((permission) => (
                             <div key={permission.id} className="flex items-center p-2.5 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
                               <div className="flex items-center space-x-2 min-w-0 flex-1">
@@ -265,15 +265,15 @@ export default function FriendsManagement() {
             <div className="bg-white rounded-lg shadow-sm border border-gray-200">
               <button
                 onClick={() => toggleAccordion('my-access')}
-                className="w-full px-3 sm:px-4 py-3 flex items-center justify-between text-left hover:bg-gray-50 transition-colors"
+                className="w-full px-4 py-4 flex items-center justify-between text-left hover:bg-gray-50 transition-colors"
               >
                 <div className="flex items-center space-x-2 min-w-0 flex-1">
                   <div className="p-1.5 bg-green-100 rounded-lg flex-shrink-0">
                     <Shield className="h-4 w-4 text-green-600" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <h3 className="text-sm sm:text-base font-semibold text-gray-900 truncate">Who Can View Mine</h3>
-                    <p className="text-xs text-gray-600 truncate">People who can view my health data ({myViewers.length})</p>
+                    <h3 className="text-base font-semibold text-gray-900">Who Can View Mine</h3>
+                    <p className="text-xs text-gray-600">People who can view my health data ({myViewers.length})</p>
                   </div>
                 </div>
                 <div className="flex-shrink-0 ml-2">
@@ -294,15 +294,15 @@ export default function FriendsManagement() {
                     transition={{ duration: 0.2 }}
                     className="overflow-hidden"
                   >
-                    <div className="px-3 sm:px-4 pb-3 border-t border-gray-200">
+                    <div className="px-4 pb-4 border-t border-gray-200">
                       {myViewers.length === 0 ? (
-                        <div className="text-center py-4">
+                        <div className="text-center py-6">
                           <Shield className="h-8 w-8 text-gray-400 mx-auto mb-2" />
                           <h3 className="text-sm font-medium text-gray-900 mb-1">No one has access yet</h3>
                           <p className="text-xs text-gray-600">No users currently have permission to view your health readings</p>
                         </div>
                       ) : (
-                        <div className="space-y-2 mt-3 max-h-48 overflow-y-auto">
+                        <div className="space-y-3 mt-4 max-h-60 overflow-y-auto">
                           {myViewers.map((permission) => (
                             <div key={permission.id} className="flex items-center p-2.5 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
                               <div className="flex items-center space-x-2 min-w-0 flex-1">
@@ -349,15 +349,15 @@ export default function FriendsManagement() {
             <div className="bg-white rounded-lg shadow-sm border border-gray-200">
               <button
                 onClick={() => toggleAccordion('requests')}
-                className="w-full px-3 sm:px-4 py-3 flex items-center justify-between text-left hover:bg-gray-50 transition-colors"
+                className="w-full px-4 py-4 flex items-center justify-between text-left hover:bg-gray-50 transition-colors"
               >
                 <div className="flex items-center space-x-2 min-w-0 flex-1">
                   <div className="p-1.5 bg-orange-100 rounded-lg flex-shrink-0">
                     <Mail className="h-4 w-4 text-orange-600" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <h3 className="text-sm sm:text-base font-semibold text-gray-900 truncate">Requests</h3>
-                    <p className="text-xs text-gray-600 truncate">Pending access requests ({receivedRequests.length} received, {sentRequests.length} sent)</p>
+                    <h3 className="text-base font-semibold text-gray-900">Requests</h3>
+                    <p className="text-xs text-gray-600">Pending access requests ({receivedRequests.length} received, {sentRequests.length} sent)</p>
                   </div>
                 </div>
                 <div className="flex-shrink-0 ml-2">
@@ -378,17 +378,17 @@ export default function FriendsManagement() {
                     transition={{ duration: 0.2 }}
                     className="overflow-hidden"
                   >
-                    <div className="px-3 sm:px-4 pb-3 border-t border-gray-200">
+                    <div className="px-4 pb-4 border-t border-gray-200">
                       {/* Received Requests */}
-                      <div className="mt-3">
-                        <h4 className="text-sm font-medium text-gray-900 mb-2">Requests to View My Readings</h4>
+                      <div className="mt-4">
+                        <h4 className="text-sm font-medium text-gray-900 mb-3">Requests to View My Readings</h4>
                         {receivedRequests.length === 0 ? (
-                          <div className="text-center py-3">
+                          <div className="text-center py-4">
                             <Mail className="h-6 w-6 text-gray-400 mx-auto mb-1" />
                             <p className="text-xs text-gray-500">No pending reading requests</p>
                           </div>
                         ) : (
-                          <div className="space-y-2 max-h-40 overflow-y-auto">
+                          <div className="space-y-3 max-h-60 overflow-y-auto">
                             {receivedRequests.map((request) => (
                               <div key={request.id} className="flex items-center p-2.5 border border-gray-200 rounded-lg">
                                 <div className="flex items-center space-x-2 min-w-0 flex-1">
@@ -432,15 +432,15 @@ export default function FriendsManagement() {
                       </div>
 
                       {/* Sent Requests */}
-                      <div className="mt-4">
-                        <h4 className="text-sm font-medium text-gray-900 mb-2">My Requests for Access</h4>
+                      <div className="mt-6">
+                        <h4 className="text-sm font-medium text-gray-900 mb-3">My Requests for Access</h4>
                         {sentRequests.length === 0 ? (
-                          <div className="text-center py-3">
+                          <div className="text-center py-4">
                             <Send className="h-6 w-6 text-gray-400 mx-auto mb-1" />
                             <p className="text-xs text-gray-500">No pending access requests</p>
                           </div>
                         ) : (
-                          <div className="space-y-2 max-h-40 overflow-y-auto">
+                          <div className="space-y-3 max-h-60 overflow-y-auto">
                             {sentRequests.map((request) => (
                               <div key={request.id} className="flex items-center p-2.5 border border-gray-200 rounded-lg">
                                 <div className="flex items-center space-x-2 min-w-0 flex-1">
@@ -480,7 +480,7 @@ export default function FriendsManagement() {
       {/* Add Friend Modal */}
       {showAddFriend && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+          <div className="bg-white rounded-lg p-5 sm:p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-medium text-gray-900 mb-4">Request Reading Access</h3>
             
             <form onSubmit={handleSendReadingRequest} className="space-y-4">

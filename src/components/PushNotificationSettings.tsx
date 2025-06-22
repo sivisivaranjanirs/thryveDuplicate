@@ -74,7 +74,7 @@ export default function PushNotificationSettings() {
 
   if (!isSupported) {
     return (
-      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
+      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 sm:p-6">
         <div className="flex items-start space-x-3">
           <AlertCircle className="h-6 w-6 text-yellow-600 flex-shrink-0 mt-0.5" />
           <div>
@@ -127,7 +127,7 @@ export default function PushNotificationSettings() {
       </AnimatePresence>
 
       {/* Permission Status */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
+      <div className="bg-white rounded-lg border border-gray-200 p-4 sm:p-6">
         <div className="flex items-center justify-between mb-4">
           <div>
             <h3 className="font-medium text-gray-900">Notification Permission</h3>
@@ -154,7 +154,7 @@ export default function PushNotificationSettings() {
         )}
 
         {permission === 'denied' && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <div className="bg-red-50 border border-red-200 rounded-lg p-3 sm:p-4">
             <p className="text-red-700 text-sm">
               Notifications are blocked. Please enable them in your browser settings to receive push notifications.
             </p>
@@ -164,7 +164,7 @@ export default function PushNotificationSettings() {
 
       {/* Subscription Settings */}
       {permission === 'granted' && (
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <div className="bg-white rounded-lg border border-gray-200 p-4 sm:p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center space-x-3">
               <div className={`p-2 rounded-lg ${isSubscribed ? 'bg-green-100' : 'bg-gray-100'}`}>
@@ -227,7 +227,7 @@ export default function PushNotificationSettings() {
 
       {/* Notification Types */}
       {isSubscribed && (
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <div className="bg-white rounded-lg border border-gray-200 p-4 sm:p-6">
           <h3 className="font-medium text-gray-900 mb-4">Notification Types</h3>
           <div className="space-y-3">
             <div className="flex items-center justify-between">

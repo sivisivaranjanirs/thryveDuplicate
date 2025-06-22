@@ -247,7 +247,7 @@ export default function ProfileSettings() {
 
   if (loading) {
     return (
-      <div className="p-6 flex items-center justify-center">
+      <div className="p-6 flex items-center justify-center min-h-[50vh]">
         <div className="text-center">
           <Loader2 className="h-8 w-8 animate-spin text-blue-600 mx-auto mb-4" />
           <p className="text-gray-600">Loading profile...</p>
@@ -257,15 +257,15 @@ export default function ProfileSettings() {
   }
 
   return (
-    <div className="p-6 max-w-4xl mx-auto space-y-6">
+    <div className="p-4 sm:p-6 max-w-4xl mx-auto space-y-6">
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl p-6 text-white">
+      <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl p-4 sm:p-6 text-white">
         <div className="flex items-center space-x-4">
           <div className="bg-white bg-opacity-20 p-3 rounded-full">
             <User className="h-8 w-8" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold">Profile Settings</h1>
+            <h1 className="text-xl sm:text-2xl font-bold">Profile Settings</h1>
             <p className="text-blue-100">Manage your personal information and preferences</p>
           </div>
         </div>
@@ -273,10 +273,10 @@ export default function ProfileSettings() {
 
       {/* Navigation Tabs */}
       <div className="bg-white rounded-lg border border-gray-200">
-        <div className="flex border-b border-gray-200">
+        <div className="flex flex-wrap border-b border-gray-200">
           <button
             onClick={() => setActiveSection('profile')}
-            className={`flex items-center space-x-2 px-6 py-4 font-medium transition-colors ${
+            className={`flex items-center space-x-2 px-4 sm:px-6 py-3 sm:py-4 font-medium transition-colors ${
               activeSection === 'profile'
                 ? 'text-blue-600 border-b-2 border-blue-600'
                 : 'text-gray-600 hover:text-gray-900'
@@ -287,7 +287,7 @@ export default function ProfileSettings() {
           </button>
           <button
             onClick={() => setActiveSection('notifications')}
-            className={`flex items-center space-x-2 px-6 py-4 font-medium transition-colors ${
+            className={`flex items-center space-x-2 px-4 sm:px-6 py-3 sm:py-4 font-medium transition-colors ${
               activeSection === 'notifications'
                 ? 'text-blue-600 border-b-2 border-blue-600'
                 : 'text-gray-600 hover:text-gray-900'

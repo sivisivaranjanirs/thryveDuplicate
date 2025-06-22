@@ -74,7 +74,7 @@ function App() {
         );
       case 'settings':
         return (
-          <div className="p-6">
+          <div className="p-0">
             <ProfileSettings />
           </div>
         );
@@ -93,7 +93,7 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className="min-h-screen bg-gray-50 flex flex-col md:flex-row">
       <Sidebar
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
@@ -101,10 +101,10 @@ function App() {
         onTabChange={setActiveTab}
       />
       
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col w-full">
         <Header onMenuClick={() => setSidebarOpen(true)} />
         
-        <main className="flex-1 overflow-auto">
+        <main className="flex-1">
           {renderContent()}
         </main>
       </div>

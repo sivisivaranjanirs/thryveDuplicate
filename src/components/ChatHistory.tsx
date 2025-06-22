@@ -107,9 +107,9 @@ export default function ChatHistory() {
   // Show conversation view if one is selected
   if (selectedConversation) {
     return (
-      <div className="h-screen flex flex-col bg-white">
+      <div className="min-h-screen flex flex-col bg-white">
         {/* Conversation Header with Back Button */}
-        <div className="flex-shrink-0 bg-white border-b border-gray-200 p-4">
+        <div className="flex-shrink-0 bg-white border-b border-gray-200 p-4 sm:p-6">
           <div className="flex items-center space-x-3">
             <button
               onClick={handleBackToList}
@@ -118,10 +118,10 @@ export default function ChatHistory() {
               <ArrowLeft className="h-5 w-5 text-gray-600" />
             </button>
             <div className="flex-1 min-w-0">
-              <h2 className="text-lg font-semibold text-gray-900 truncate">
+              <h2 className="text-lg sm:text-xl font-semibold text-gray-900 break-words">
                 {selectedConversation.title}
               </h2>
-              <p className="text-sm text-gray-600 truncate">
+              <p className="text-sm text-gray-600">
                 Created: {new Date(selectedConversation.created_at).toLocaleDateString()} • 
                 Updated: {new Date(selectedConversation.updated_at).toLocaleDateString()}
               </p>
@@ -130,7 +130,7 @@ export default function ChatHistory() {
         </div>
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        <div className="flex-1 p-4 sm:p-6 space-y-4">
           {loading && currentConversation?.id === selectedConversation.id ? (
             <div className="text-center py-8">
               <Loader2 className="h-6 w-6 animate-spin text-blue-600 mx-auto mb-2" />
@@ -156,7 +156,7 @@ export default function ChatHistory() {
                       ? 'bg-blue-600 text-white'
                       : 'bg-white text-gray-900 shadow-sm border border-gray-200'
                   }`}>
-                    <p className="text-sm whitespace-pre-wrap break-words">{message.content}</p>
+                    <p className="text-sm whitespace-pre-wrap break-words overflow-hidden">{message.content}</p>
                     <div className="flex items-center justify-between mt-1">
                       <span className={`text-xs ${
                         message.type === 'user' ? 'text-blue-100' : 'text-gray-500'
@@ -190,7 +190,7 @@ export default function ChatHistory() {
         </div>
 
         {/* Input Area */}
-        <div className="flex-shrink-0 bg-white border-t border-gray-200 p-4">
+        <div className="flex-shrink-0 bg-white border-t border-gray-200 p-4 sm:p-6">
           <form onSubmit={handleTextSubmit} className="flex space-x-2">
             <input
               type="text"
@@ -215,12 +215,12 @@ export default function ChatHistory() {
 
   // Show conversations list
   return (
-    <div className="h-screen flex flex-col bg-gray-50">
+    <div className="min-h-screen flex flex-col bg-gray-50">
       {/* Header */}
-      <div className="flex-shrink-0 p-6 bg-white border-b border-gray-200">
+      <div className="flex-shrink-0 p-4 sm:p-6 bg-white border-b border-gray-200">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Chat History</h1>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Chat History</h1>
             <p className="text-gray-600">Your conversations</p>
           </div>
           <button
@@ -246,14 +246,14 @@ export default function ChatHistory() {
       </div>
 
       {/* Conversations List */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1">
         {loading && conversations.length === 0 ? (
-          <div className="p-6 text-center">
+          <div className="p-4 sm:p-6 text-center">
             <Loader2 className="h-6 w-6 animate-spin text-blue-600 mx-auto mb-2" />
             <p className="text-sm text-gray-600">Loading conversations...</p>
           </div>
         ) : filteredConversations.length === 0 ? (
-          <div className="p-6 text-center">
+          <div className="p-4 sm:p-6 text-center">
             <MessageSquare className="h-8 w-8 text-gray-400 mx-auto mb-3" />
             <h3 className="text-sm font-medium text-gray-900 mb-1">
               {searchTerm ? 'No conversations found' : 'No conversations yet'}
@@ -274,18 +274,18 @@ export default function ChatHistory() {
             )}
           </div>
         ) : (
-          <div className="p-4">
+          <div className="p-4 sm:p-6">
             {filteredConversations.map((conversation) => (
               <div
                 key={conversation.id}
                 onClick={() => handleSelectConversation(conversation)}
-                className="p-4 rounded-lg cursor-pointer transition-colors group mb-3 bg-white border border-gray-200 hover:shadow-md"
+                className="p-4 rounded-lg cursor-pointer transition-colors group mb-4 bg-white border border-gray-200 hover:shadow-md"
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center space-x-2 mb-2">
                       <MessageSquare className="h-4 w-4 text-blue-600 flex-shrink-0" />
-                      <h3 className="text-sm font-medium text-gray-900 truncate">
+                      <h3 className="text-sm font-medium text-gray-900 break-words">
                         {conversation.title}
                       </h3>
                     </div>
@@ -312,7 +312,7 @@ export default function ChatHistory() {
 
       {/* Stats */}
       {conversations.length > 0 && (
-        <div className="flex-shrink-0 p-4 border-t border-gray-200 bg-blue-50">
+        <div className="flex-shrink-0 p-4 sm:p-6 border-t border-gray-200 bg-blue-50">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs font-medium text-blue-900">
