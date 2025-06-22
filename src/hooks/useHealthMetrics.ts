@@ -49,6 +49,21 @@ export function useHealthMetrics(metricType?: string) {
       setMetrics(prev => [data, ...prev]);
       
       // Friend notifications are handled automatically by database triggers
+      // Trigger queue processing for push notifications
+      try {
+        fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/process-notification-queue`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ batch_size: 5 })
+        }).catch(error => {
+          console.warn('Failed to trigger notification queue processing:', error);
+        });
+      } catch (error) {
+        console.warn('Failed to trigger notification queue processing:', error);
+      }
       
       return { data, error: null };
     } catch (err) {
