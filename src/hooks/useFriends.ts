@@ -251,6 +251,23 @@ export function useFriends() {
       }
 
       await fetchFriendRequests();
+      
+      // Trigger queue processing for push notifications
+      try {
+        fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/process-notification-queue`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ batch_size: 5 })
+        }).catch(error => {
+          console.warn('Failed to trigger notification queue processing:', error);
+        });
+      } catch (error) {
+        console.warn('Failed to trigger notification queue processing:', error);
+      }
+      
       return { data, error: null };
     } catch (err) {
       const error = err instanceof Error ? err.message : 'Failed to send reading request';
@@ -301,6 +318,22 @@ export function useFriends() {
           fetchNotifications(),
           fetchMyViewers()
         ]);
+        
+        // Trigger queue processing for push notifications
+        try {
+          fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/process-notification-queue`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ batch_size: 5 })
+          }).catch(error => {
+            console.warn('Failed to trigger notification queue processing:', error);
+          });
+        } catch (error) {
+          console.warn('Failed to trigger notification queue processing:', error);
+        }
       }, 1000); // Small delay to ensure database triggers have completed
 
       return { data, error: null };
