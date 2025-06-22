@@ -318,22 +318,22 @@ export default function VoiceChat() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
-                className={\`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
+                className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
               >
-                <div className={\`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+                <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
                   message.type === 'user'
                     ? 'bg-blue-600 text-white'
                     : 'bg-white text-gray-900 shadow-sm border border-gray-200'
                 }`}>
                   <p className="text-sm whitespace-pre-wrap">{message.content}</p>
                   <div className="flex items-center justify-between mt-1">
-                    <span className={\`text-xs ${
+                    <span className={`text-xs ${
                       message.type === 'user' ? 'text-blue-100' : 'text-gray-500'
                     }`}>
                       {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </span>
                     {message.isVoice && (
-                      <Volume2 className={\`h-3 w-3 ml-2 ${
+                      <Volume2 className={`h-3 w-3 ml-2 ${
                         message.type === 'user' ? 'text-blue-100' : 'text-gray-400'
                       }`} />
                     )}
@@ -391,7 +391,7 @@ export default function VoiceChat() {
             <button
               onClick={isRecording ? handleStopRecording : handleStartRecording}
               disabled={true}
-              className={\`p-3 rounded-full transition-all duration-200 disabled:opacity-50 ${
+              className={`p-3 rounded-full transition-all duration-200 disabled:opacity-50 ${
                 isRecording
                   ? 'bg-red-500 text-white shadow-lg scale-110'
                   : 'bg-blue-600 text-white hover:bg-blue-700 shadow-md'
