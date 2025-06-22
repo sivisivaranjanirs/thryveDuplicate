@@ -85,8 +85,7 @@ export function usePushNotifications() {
       const registration = await navigator.serviceWorker.ready;
       
       // Generate VAPID key (you'll need to set this in your environment)
-      const vapidPublicKey = import.meta.env.VITE_VAPID_PUBLIC_KEY || 
-        'BEl62iUYgUivxIkv69yViEuiBIa40HI80NM9f8HtLlVLVWjbzgSjN6QkjwxzKHjHyHRgUtyYOOUfJ6BjPXSNVQ';
+      const vapidPublicKey = import.meta.env.VITE_VAPID_PUBLIC_KEY;
 
       const subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
