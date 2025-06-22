@@ -491,23 +491,18 @@ export function useFriends() {
   useEffect(() => {
     if (!user) return;
 
-    // Clean up any existing channels first
-    const cleanup = () => {
-      console.log('Cleaning up existing channels:', activeChannels.current.length);
-      activeChannels.current.forEach(channel => {
-        try {
-          channel.unsubscribe();
-          supabase.removeChannel(channel);
-        } catch (error) {
-          console.warn('Error cleaning up channel:', error);
-        }
-      });
-      activeChannels.current = [];
-    };
-
-    cleanup();
-
     console.log('Setting up real-time subscriptions for user:', user.id);
+
+    // Clean up any existing channels first
+    activeChannels.current.forEach(channel => {
+      try {
+        channel.unsubscribe();
+        supabase.removeChannel(channel);
+      } catch (error) {
+        console.warn('Error cleaning up channel:', error);
+      }
+    });
+    activeChannels.current = [];
 
     try {
       // Create unique channel names with user ID to avoid conflicts
@@ -524,8 +519,7 @@ export function useFriends() {
             console.log('My access permissions changed:', payload);
             fetchFriends();
           }
-        )
-        .subscribe();
+        );
 
       const myViewersChannel = supabase
         .channel(`reading_permissions_owner_${user.id}`)
@@ -540,8 +534,7 @@ export function useFriends() {
             console.log('My viewers permissions changed:', payload);
             fetchMyViewers();
           }
-        )
-        .subscribe();
+        );
 
       const readingRequestsChannel = supabase
         .channel(`reading_requests_requester_${user.id}`)
@@ -556,8 +549,7 @@ export function useFriends() {
             console.log('Reading requests changed (as requester):', payload);
             fetchFriendRequests();
           }
-        )
-        .subscribe();
+        );
 
       const receivedRequestsChannel = supabase
         .channel(`reading_requests_owner_${user.id}`)
@@ -572,8 +564,7 @@ export function useFriends() {
             console.log('Reading requests changed (as owner):', payload);
             fetchFriendRequests();
           }
-        )
-        .subscribe();
+        );
 
       const notificationsChannel = supabase
         .channel(`notifications_${user.id}`)
@@ -588,8 +579,7 @@ export function useFriends() {
             console.log('New notification:', payload);
             fetchNotifications();
           }
-        )
-        .subscribe();
+        );
 
       // Store all channels for cleanup
       activeChannels.current = [
@@ -600,6 +590,15 @@ export function useFriends() {
         notificationsChannel
       ];
 
+      // Subscribe to all channels after storing them
+      activeChannels.current.forEach(channel => {
+        try {
+          channel.subscribe();
+        } catch (error) {
+          console.error('Error subscribing to channel:', error);
+        }
+      });
+
       console.log('Created channels:', activeChannels.current.length);
 
     } catch (error) {
@@ -607,7 +606,18 @@ export function useFriends() {
     }
 
     // Cleanup function
-    return cleanup;
+    return () => {
+      console.log('Cleaning up channels on unmount:', activeChannels.current.length);
+      activeChannels.current.forEach(channel => {
+        try {
+          channel.unsubscribe();
+          supabase.removeChannel(channel);
+        } catch (error) {
+          console.warn('Error cleaning up channel on unmount:', error);
+        }
+      });
+      activeChannels.current = [];
+    };
   }, [user, fetchFriends, fetchFriendRequests, fetchNotifications, fetchMyViewers]);
 
   const unreadNotificationsCount = notifications.filter(n => !n.is_read).length;
