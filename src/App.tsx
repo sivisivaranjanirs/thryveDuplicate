@@ -33,6 +33,13 @@ function App() {
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, []);
 
+  // Update the hash when tab changes
+  const handleTabChange = (tab: string) => {
+    // Update the hash which will trigger the hashchange event
+    window.location.hash = tab;
+    // No need to call setActiveTab directly as the hashchange event will handle it
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -105,7 +112,7 @@ function App() {
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
         activeTab={activeTab}
-        onTabChange={setActiveTab}
+        onTabChange={handleTabChange}
       />
       
       <div className="flex-1 flex flex-col w-full">
