@@ -9,6 +9,7 @@ import VoiceChat from './components/VoiceChat';
 import HealthTracking from './components/HealthTracking';
 import ChatHistory from './components/ChatHistory';
 import FriendsManagement from './components/FriendsManagement';
+import Feedback from './components/Feedback';
 import ProfileSettings from './components/ProfileSettings';
 
 function App() {
@@ -61,6 +62,12 @@ function App() {
         return (
           <ErrorBoundary>
             <FriendsManagement />
+          </ErrorBoundary>
+        );
+      case 'feedback':
+        return (
+          <ErrorBoundary>
+            <Feedback />
           </ErrorBoundary>
         );
       case 'reports':

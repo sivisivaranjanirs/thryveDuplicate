@@ -26,6 +26,7 @@ const menuItems = [
   { id: 'friends', label: 'Access', icon: Users },
   { id: 'reports', label: 'Health Reports', icon: FileText },
   { id: 'settings', label: 'Settings', icon: Settings },
+  { id: 'feedback', label: 'Feedback', icon: HelpCircle },
   { id: 'help', label: 'Help & Support', icon: HelpCircle },
 ];
 

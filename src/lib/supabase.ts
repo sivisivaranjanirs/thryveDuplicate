@@ -74,6 +74,21 @@ export interface ChatMessage {
   created_at: string;
 }
 
+export interface UserFeedback {
+  id: string;
+  user_id: string;
+  user_name: string;
+  user_email?: string;
+  type: 'suggestion' | 'bug' | 'praise' | 'other';
+  title: string;
+  description: string;
+  rating?: number;
+  status: 'pending' | 'reviewed' | 'implemented' | 'declined';
+  admin_notes?: string;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface WhatsAppContact {
   id: string;
   user_id: string;
