@@ -46,7 +46,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
 
   const handleEditProfileClick = () => {
     setShowProfileDropdown(false);
-    window.location.hash = '#settings';
+    window.location.hash = 'settings';
   };
 
   const handlePhotoClick = () => {
@@ -209,7 +209,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
                                 onClick={() => {
                                   setShowNotifications(false);
                                   // Navigate to friends page with notifications tab
-                                  window.location.hash = '#friends';
+                                  window.location.hash = 'friends';
                                 }}
                                 className="text-sm text-blue-600 hover:text-blue-700 font-medium"
                               >
