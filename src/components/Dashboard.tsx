@@ -209,7 +209,7 @@ export default function Dashboard() {
               <Activity className="h-6 w-6 text-blue-600" />
             </div>
             <div>
-              <h3 className="font-medium text-gray-900">Start Voice Chat</h3>
+              <h3 className="font-medium text-gray-900">Voice Chat</h3>
               <p className="text-sm text-gray-500">Ask health questions</p>
             </div>
           </div>
