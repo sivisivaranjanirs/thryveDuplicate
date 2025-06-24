@@ -210,7 +210,7 @@ export default function Dashboard() {
             </div>
             <div>
               <h3 className="font-medium text-gray-900">Start Conversation</h3>
-              <p className="text-sm text-gray-500">Ask health questions</p>
+              <p className="text-sm text-gray-500">Ask health related questions</p>
             </div>
           </div>
         </button>
