@@ -1,6 +1,6 @@
-const CACHE_NAME = 'thryve-v1';
-const STATIC_CACHE_NAME = 'thryve-static-v1';
-const DYNAMIC_CACHE_NAME = 'thryve-dynamic-v1';
+const CACHE_NAME = 'thryve-v2';
+const STATIC_CACHE_NAME = 'thryve-static-v2';
+const DYNAMIC_CACHE_NAME = 'thryve-dynamic-v2';
 
 // Static assets to cache immediately
 const STATIC_ASSETS = [

@@ -18,7 +18,9 @@ if ('serviceWorker' in navigator && window.self === window.top) {
               if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
                 // New content is available, notify user
                 console.log('New content available! Please refresh the page.');
-                // You could show a toast notification here
+                
+                // Dispatch custom event to notify App component
+                window.dispatchEvent(new CustomEvent('new-version-available'));
               }
             });
           }
