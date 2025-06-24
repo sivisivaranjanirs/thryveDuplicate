@@ -53,7 +53,40 @@ function App() {
   };
 
   const handleRefreshApp = () => {
-    window.location.reload();
+    // Clear all caches and reload
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.ready.then(registration => {
+        // Tell the service worker to skip waiting and take control
+        if (registration.waiting) {
+          registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+        }
+        
+        // Clear all caches
+        const messageChannel = new MessageChannel();
+        messageChannel.port1.onmessage = (event) => {
+          if (event.data.success) {
+            console.log('Cache cleared successfully, reloading...');
+            window.location.reload();
+          }
+        };
+        
+        navigator.serviceWorker.controller?.postMessage(
+          { type: 'CLEAR_CACHE' },
+          [messageChannel.port2]
+        );
+        
+        // Fallback: reload after a short delay if cache clearing doesn't respond
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
+      }).catch(() => {
+        // Fallback if service worker is not available
+        window.location.reload();
+      });
+    } else {
+      // Fallback for browsers without service worker support
+      window.location.reload();
+    }
   };
 
   const handleDismissUpdate = () => {

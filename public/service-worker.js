@@ -1,6 +1,7 @@
-const CACHE_NAME = 'thryve-v2';
-const STATIC_CACHE_NAME = 'thryve-static-v2';
-const DYNAMIC_CACHE_NAME = 'thryve-dynamic-v2';
+const CACHE_VERSION = 'v3';
+const CACHE_NAME = `thryve-${CACHE_VERSION}`;
+const STATIC_CACHE_NAME = `thryve-static-${CACHE_VERSION}`;
+const DYNAMIC_CACHE_NAME = `thryve-dynamic-${CACHE_VERSION}`;
 
 // Static assets to cache immediately
 const STATIC_ASSETS = [
@@ -9,9 +10,9 @@ const STATIC_ASSETS = [
   '/manifest.json'
 ];
 
-// Install event - cache static assets
+// Install event - cache static assets and skip waiting
 self.addEventListener('install', (event) => {
-  console.log('Service Worker: Installing...');
+  console.log('Service Worker: Installing version', CACHE_VERSION);
   event.waitUntil(
     caches.open(STATIC_CACHE_NAME)
       .then((cache) => {
@@ -19,7 +20,8 @@ self.addEventListener('install', (event) => {
         return cache.addAll(STATIC_ASSETS);
       })
       .then(() => {
-        console.log('Service Worker: Installation complete');
+        console.log('Service Worker: Installation complete, skipping waiting');
+        // Force the waiting service worker to become the active service worker
         return self.skipWaiting();
       })
       .catch((error) => {
@@ -28,26 +30,67 @@ self.addEventListener('install', (event) => {
   );
 });
 
-// Activate event - clean up old caches
+// Activate event - clean up old caches and claim clients
 self.addEventListener('activate', (event) => {
-  console.log('Service Worker: Activating...');
+  console.log('Service Worker: Activating version', CACHE_VERSION);
   event.waitUntil(
-    caches.keys()
-      .then((cacheNames) => {
+    Promise.all([
+      // Clean up old caches
+      caches.keys().then((cacheNames) => {
         return Promise.all(
           cacheNames.map((cacheName) => {
-            if (cacheName !== STATIC_CACHE_NAME && cacheName !== DYNAMIC_CACHE_NAME) {
+            if (cacheName !== STATIC_CACHE_NAME && 
+                cacheName !== DYNAMIC_CACHE_NAME && 
+                cacheName !== CACHE_NAME) {
               console.log('Service Worker: Deleting old cache', cacheName);
               return caches.delete(cacheName);
             }
           })
         );
-      })
-      .then(() => {
-        console.log('Service Worker: Activation complete');
-        return self.clients.claim();
-      })
+      }),
+      // Take control of all clients immediately
+      self.clients.claim()
+    ]).then(() => {
+      console.log('Service Worker: Activation complete, claiming clients');
+      // Notify all clients that a new version is available
+      return self.clients.matchAll().then(clients => {
+        clients.forEach(client => {
+          client.postMessage({
+            type: 'NEW_VERSION_AVAILABLE',
+            version: CACHE_VERSION
+          });
+        });
+      });
+    })
   );
+});
+
+// Message event - handle refresh requests from clients
+self.addEventListener('message', (event) => {
+  console.log('Service Worker: Received message', event.data);
+  
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    console.log('Service Worker: Skipping waiting due to client request');
+    self.skipWaiting();
+  }
+  
+  if (event.data && event.data.type === 'CLEAR_CACHE') {
+    console.log('Service Worker: Clearing all caches');
+    event.waitUntil(
+      caches.keys().then(cacheNames => {
+        return Promise.all(
+          cacheNames.map(cacheName => {
+            console.log('Service Worker: Deleting cache', cacheName);
+            return caches.delete(cacheName);
+          })
+        );
+      }).then(() => {
+        console.log('Service Worker: All caches cleared');
+        // Notify client that cache is cleared
+        event.ports[0].postMessage({ success: true });
+      })
+    );
+  }
 });
 
 // Fetch event - serve from cache, fallback to network
@@ -66,6 +109,34 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // For HTML requests, always try network first to get latest version
+  if (request.destination === 'document') {
+    event.respondWith(
+      fetch(request)
+        .then(response => {
+          // If network succeeds, cache and return the response
+          if (response && response.status === 200) {
+            const responseToCache = response.clone();
+            caches.open(STATIC_CACHE_NAME).then(cache => {
+              cache.put(request, responseToCache);
+            });
+          }
+          return response;
+        })
+        .catch(() => {
+          // If network fails, try cache
+          return caches.match(request).then(cachedResponse => {
+            return cachedResponse || new Response(
+              '<html><body><h1>Offline</h1><p>Please check your internet connection.</p></body></html>',
+              { headers: { 'Content-Type': 'text/html' } }
+            );
+          });
+        })
+    );
+    return;
+  }
+
+  // For other requests, use cache-first strategy
   event.respondWith(
     caches.match(request)
       .then((cachedResponse) => {
