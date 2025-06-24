@@ -22,7 +22,7 @@ function App() {
     const handleHashChange = () => {
       const hash = window.location.hash.slice(1);
       console.log('App - Hash changed to:', hash);
-      if (hash && ['dashboard', 'voice-chat', 'health-tracking', 'history', 'friends', 'reports', 'settings', 'help'].includes(hash)) {
+      if (hash && ['dashboard', 'voice-chat', 'health-tracking', 'history', 'friends', 'reports', 'settings', 'feedback', 'help'].includes(hash)) {
         setActiveTab(hash);
       }
     };
