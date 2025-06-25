@@ -1,3 +1,28 @@
+# Dependencies
+node_modules
+.pnp
+.pnp.js
+
+# Testing
+coverage
+.nyc_output
+
+# Build outputs
+dist
+build
+out
+.next
+.nuxt
+.cache
+.output
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
 # Logs
 logs
 *.log
@@ -6,11 +31,6 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
-
-node_modules
-dist
-dist-ssr
-*.local
 
 # Editor directories and files
 .vscode/*
@@ -22,4 +42,13 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-.env
+
+# Project specific
+public/icons/*.png
+supabase/migrations/*.sql
+src/test
+src/hooks/__tests__
+src/components/__tests__
+src/test/e2e
+src/test/integration
+supabase/functions
