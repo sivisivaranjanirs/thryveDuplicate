@@ -74,7 +74,7 @@ export interface ChatMessage {
   created_at: string;
 }
 
-export interface UserFeedback {
+interface UserFeedback {
   id: string;
   user_id: string;
   user_name: string;
@@ -89,7 +89,7 @@ export interface UserFeedback {
   updated_at: string;
 }
 
-export interface WhatsAppContact {
+interface WhatsAppContact {
   id: string;
   user_id: string;
   name: string;
@@ -100,7 +100,7 @@ export interface WhatsAppContact {
   updated_at: string;
 }
 
-export interface NotificationSettings {
+interface NotificationSettings {
   id: string;
   user_id: string;
   whatsapp_enabled: boolean;
@@ -111,7 +111,7 @@ export interface NotificationSettings {
   updated_at: string;
 }
 
-export interface UserFriend {
+interface UserFriend {
   id: string;
   viewer_id: string;
   owner_id: string;
@@ -120,7 +120,7 @@ export interface UserFriend {
   updated_at: string;
 }
 
-export interface ReadingRequest {
+interface ReadingRequest {
   id: string;
   requester_id: string;
   owner_id: string;
@@ -130,7 +130,7 @@ export interface ReadingRequest {
   updated_at: string;
 }
 
-export interface PushSubscription {
+interface PushSubscription {
   id: string;
   user_id: string;
   endpoint: string;
