@@ -247,20 +247,18 @@ export function useChat() {
       console.log('Voice recording: Starting STT process');
       console.log('Audio blob size:', audioBlob.size, 'type:', audioBlob.type);
 
-      // Convert blob to base64
-      const base64Audio = await blobToBase64(audioBlob);
-      console.log('Voice recording: Converted to base64, length:', base64Audio.length);
+      // Create FormData for file upload
+      const formData = new FormData();
+      formData.append('file', audioBlob, 'recording.wav');
+      console.log('Voice recording: Created FormData with audio file');
 
       // Send to Eleven Labs STT (Scribe v1)
       const sttResponse = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/eleven-labs-stt`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-          'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          audioBase64: base64Audio
-        }),
+        body: formData,
       });
 
       console.log('Voice recording: STT response status:', sttResponse.status);
