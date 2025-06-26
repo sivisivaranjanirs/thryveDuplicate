@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Mic, MicOff, Send, Volume2, VolumeX, Plus, MessageSquare, Trash2, Loader2, X, Waveform } from 'lucide-react';
+import { Mic, MicOff, Send, Volume2, VolumeX, Plus, MessageSquare, Trash2, Loader2, X, AudioWaveform as Waveform } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useChat } from '../hooks/useChat';
 
@@ -124,7 +124,7 @@ export default function VoiceChat() {
       recorder.start();
       setMediaRecorder(recorder);
       setAudioChunks(chunks);
-      setIsListening(true);
+      setIsRecording(true);
     } catch (error) {
       console.error('Error accessing microphone:', error);
       alert('Unable to access microphone. Please check your permissions and try again.');
@@ -164,13 +164,10 @@ export default function VoiceChat() {
       try {
         await sendVoiceRecording(audioBlob);
       } catch (error) {
-          console.error('Speech recognition error:', event.error);
-          // Fallback to simulated transcription
-          const simulatedTranscription = "I've been having headaches lately and I'm concerned about my blood pressure.";
-          handleSendMessage(simulatedTranscription, true);
-        };
-        
-        // Convert audio blob to audio element and play it for recognition
+        console.error('Speech recognition error:', error);
+        // Fallback to simulated transcription
+        const simulatedTranscription = "I've been having headaches lately and I'm concerned about my blood pressure.";
+        handleSendMessage(simulatedTranscription, true);
       } finally {
         setIsProcessingVoice(false);
       }
@@ -416,27 +413,6 @@ export default function VoiceChat() {
 
           <div ref={messagesEndRef} />
         </div>
-
-        {/* Voice Recording Indicator */}
-        {/* <AnimatePresence>
-          {isListening && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.8 }}
-              className="mx-4 sm:mx-6 mb-2 p-3 bg-blue-50 border border-blue-200 rounded-lg"
-            >
-              <div className="flex items-center space-x-2">
-                <div className="flex space-x-1">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                  <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                  <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-                </div>
-                <span className="text-sm text-blue-700">Listening...</span>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence> */}
 
         {/* Voice Recording Visualization */}
         <AnimatePresence>
