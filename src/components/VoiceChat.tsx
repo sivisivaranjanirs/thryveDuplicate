@@ -161,7 +161,9 @@ export default function VoiceChat() {
     setIsProcessingVoice(true);
     
     try {
-      await sendVoiceRecording(audioBlob);
+      // Convert webm audio to WAV format
+      const wavBlob = await convertWebmToWav(audioBlob);
+      await sendVoiceRecording(wavBlob);
     } catch (error) {
       console.error('Speech recognition error:', error);
       // Fallback to simulated transcription
@@ -169,6 +171,35 @@ export default function VoiceChat() {
       handleSendMessage(simulatedTranscription, true);
     } finally {
       setIsProcessingVoice(false);
+    }
+  };
+
+  // Convert webm audio blob to WAV format
+  const convertWebmToWav = async (webmBlob: Blob): Promise<Blob> => {
+    try {
+      // Create audio context
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      
+      // Convert blob to array buffer
+      const arrayBuffer = await webmBlob.arrayBuffer();
+      
+      // Decode audio data
+      const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+      
+      // Get audio data as Float32Array
+      const audioData = audioBuffer.getChannelData(0); // Get first channel (mono)
+      const sampleRate = audioBuffer.sampleRate;
+      
+      // Use the convertToWav utility from useChat hook
+      const wavBlob = convertToWav(audioData, sampleRate);
+      
+      // Clean up audio context
+      await audioContext.close();
+      
+      return wavBlob;
+    } catch (error) {
+      console.error('Error converting webm to wav:', error);
+      throw new Error('Failed to convert audio format');
     }
   };
 
