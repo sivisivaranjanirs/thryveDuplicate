@@ -183,6 +183,11 @@ export default function VoiceChat() {
       const wavBlob = await convertWebmToWav(audioBlob);
       console.log('VoiceChat: Converted to WAV, size:', wavBlob.size);
       
+      // Check if the audio recording is too short or empty
+      if (wavBlob.size < 1000) {
+        throw new Error('Recording is too short or empty. Please try recording again with more speech.');
+      }
+      
       // Send to STT service
       const result = await sendVoiceRecording(wavBlob);
       
