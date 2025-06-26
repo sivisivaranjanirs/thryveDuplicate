@@ -158,26 +158,19 @@ export default function VoiceChat() {
   };
 
   const handleVoiceRecordingComplete = async (audioBlob: Blob) => {
+    setIsProcessingVoice(true);
+    
     try {
-      setIsProcessingVoice(true);
-      
-      try {
-        await sendVoiceRecording(audioBlob);
-      } catch (error) {
-        console.error('Speech recognition error:', error);
-        // Fallback to simulated transcription
-        const simulatedTranscription = "I've been having headaches lately and I'm concerned about my blood pressure.";
-        handleSendMessage(simulatedTranscription, true);
-      } finally {
-        setIsProcessingVoice(false);
-      }
+      await sendVoiceRecording(audioBlob);
     } catch (error) {
-      console.error('Error processing voice recording:', error);
+      console.error('Speech recognition error:', error);
       // Fallback to simulated transcription
       const simulatedTranscription = "I've been having headaches lately and I'm concerned about my blood pressure.";
       handleSendMessage(simulatedTranscription, true);
+    } finally {
+      setIsProcessingVoice(false);
     }
-  };  
+  };
 
   const handleSendMessage = async (content: string, isVoice = false) => {
     if (!content.trim()) return;
