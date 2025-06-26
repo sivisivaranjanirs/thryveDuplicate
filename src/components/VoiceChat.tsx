@@ -1,7 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Mic, MicOff, Send, Volume2, VolumeX, Plus, MessageSquare, Trash2, Loader2, X, AudioWaveform as Waveform } from 'lucide-react';
+import { Mic, MicOff, Send, Volume2, VolumeX, Plus, MessageSquare, Trash2, Loader2, X, AudioWaveform as Waveform, Crown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useChat } from '../hooks/useChat';
+import { useSubscription } from '../hooks/useSubscription';
+import PremiumFeatureGate from './PremiumFeatureGate';
 
 interface Message {
   id: string;
@@ -24,6 +26,7 @@ export default function VoiceChat() {
   const [isProcessingVoice, setIsProcessingVoice] = useState(false);
   const visualizationRef = useRef<number | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [dailyMessageCount, setDailyMessageCount] = useState(0);
 
   const {
     conversations,
@@ -38,6 +41,8 @@ export default function VoiceChat() {
     startNewConversation,
     deleteConversation,
   } = useChat();
+  
+  const { isPremium } = useSubscription();
 
   // Convert database messages to component format
   const messages: Message[] = dbMessages.map(msg => ({
@@ -59,6 +64,17 @@ export default function VoiceChat() {
 
   // Show loading state while conversation is being switched or messages are loading
   const isLoadingConversation = loading && currentConversation;
+  
+  // Count today's messages for free users
+  useEffect(() => {
+    if (!isPremium) {
+      const today = new Date().toDateString();
+      const todayMessages = messages.filter(msg => 
+        msg.type === 'user' && new Date(msg.timestamp).toDateString() === today
+      );
+      setDailyMessageCount(todayMessages.length);
+    }
+  }, [messages, isPremium]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -239,6 +255,12 @@ export default function VoiceChat() {
 
   const handleSendMessage = async (content: string, isVoice = false) => {
     if (!content.trim()) return;
+    
+    // Check premium limits for free users
+    if (!isPremium && dailyMessageCount >= 3) {
+      alert('Free users can send up to 3 AI messages per day. Upgrade to Premium for unlimited conversations!');
+      return;
+    }
 
     setTextInput('');
     const result = await sendMessageToLLM(content, isVoice);
@@ -251,6 +273,12 @@ export default function VoiceChat() {
 
   const handleTextSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!isPremium && dailyMessageCount >= 3) {
+      alert('Free users can send up to 3 AI messages per day. Upgrade to Premium for unlimited conversations!');
+      return;
+    }
+    
     handleSendMessage(textInput);
   };
 
@@ -519,19 +547,52 @@ export default function VoiceChat() {
 
         {/* Input Area */}
         <div className="bg-white border-t border-gray-200 p-4 sm:p-6">
+          {!isPremium && (
+            <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-blue-800 text-sm">
+                Free plan: {dailyMessageCount}/3 daily messages used. 
+                <button 
+                  onClick={() => {/* Show subscription modal */}}
+                  className="ml-1 font-medium underline hover:no-underline"
+                >
+                  Upgrade for unlimited conversations
+                </button>
+              </p>
+            </div>
+          )}
+          
           <div className="flex items-center space-x-2">
-            <button
-              onClick={isProcessingVoice ? undefined : isRecording ? handleStopRecording : handleStartRecording}
-              disabled={isProcessingVoice}
-              className={`p-3 rounded-full transition-all duration-200 disabled:opacity-50 ${
-                isRecording
-                  ? 'bg-red-500 text-white shadow-lg scale-110 animate-pulse'
-                  : 'bg-blue-600 text-white hover:bg-blue-700 shadow-md'
-              }`}
-              title={isRecording ? 'Stop recording' : 'Start voice recording'}
-            >
-              {isRecording ? <MicOff className="h-6 w-6" /> : <Mic className="h-6 w-6" />}
-            </button>
+            {isPremium ? (
+              <button
+                onClick={isProcessingVoice ? undefined : isRecording ? handleStopRecording : handleStartRecording}
+                disabled={isProcessingVoice || (!isPremium && dailyMessageCount >= 3)}
+                className={`p-3 rounded-full transition-all duration-200 disabled:opacity-50 ${
+                  isRecording
+                    ? 'bg-red-500 text-white shadow-lg scale-110 animate-pulse'
+                    : 'bg-blue-600 text-white hover:bg-blue-700 shadow-md'
+                }`}
+                title={isRecording ? 'Stop recording' : 'Start voice recording'}
+              >
+                {isRecording ? <MicOff className="h-6 w-6" /> : <Mic className="h-6 w-6" />}
+              </button>
+            ) : (
+              <PremiumFeatureGate
+                feature="Voice Chat"
+                description="Use voice commands to chat with your AI health assistant"
+                fallback={
+                  <button
+                    disabled
+                    className="p-3 rounded-full bg-gray-400 text-white cursor-not-allowed relative"
+                    title="Voice chat requires Premium"
+                  >
+                    <Mic className="h-6 w-6" />
+                    <Crown className="h-3 w-3 text-yellow-300 absolute -top-1 -right-1" />
+                  </button>
+                }
+              >
+                <div></div>
+              </PremiumFeatureGate>
+            )}
             
             <form onSubmit={handleTextSubmit} className="flex-1 flex space-x-2">
               <input
@@ -539,12 +600,12 @@ export default function VoiceChat() {
                 value={isProcessingVoice ? "Processing your voice message..." : textInput}
                 onChange={(e) => setTextInput(e.target.value)}
                 placeholder="Type your health question..."
-                disabled={loading || isProcessingVoice}
+                disabled={loading || isProcessingVoice || (!isPremium && dailyMessageCount >= 3)}
                 className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50"
               />
               <button
                 type="submit"
-                disabled={!textInput.trim() || loading || isProcessingVoice}
+                disabled={!textInput.trim() || loading || isProcessingVoice || (!isPremium && dailyMessageCount >= 3)}
                 className="p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 <Send className="h-5 w-5" />

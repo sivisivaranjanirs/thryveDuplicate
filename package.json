@@ -18,7 +18,8 @@
     "react-dom": "^18.3.1",
     "framer-motion": "^10.16.16",
     "@supabase/supabase-js": "^2.39.0",
-    "wavefile": "^11.0.0"
+    "wavefile": "^11.0.0",
+    "react-native-purchases": "^7.25.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.1",

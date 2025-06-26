@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { useHealthMetrics } from '../hooks/useHealthMetrics';
 import { useAuth } from '../hooks/useAuth';
+import { useSubscription } from '../hooks/useSubscription';
 
 const metricIcons = {
   blood_pressure: Heart,
@@ -44,6 +45,7 @@ const getMetricColor = (metricType: string) => {
 export default function Dashboard() {
   const { user } = useAuth();
   const { metrics: allMetrics, loading: metricsLoading } = useHealthMetrics();
+  const { isPremium, subscriptionStatus } = useSubscription();
 
   // Get latest metric for each type
   const getLatestMetric = (type: string) => {
@@ -102,10 +104,39 @@ export default function Dashboard() {
 
   return (
     <div className="p-4 sm:p-6 space-y-6">
+      {/* Premium Status Banner */}
+      {!isPremium && (
+        <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl p-4 sm:p-6 text-white">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <Crown className="h-6 w-6 text-yellow-300" />
+              <div>
+                <h3 className="font-semibold">Upgrade to Premium</h3>
+                <p className="text-blue-100 text-sm">Unlock unlimited tracking, voice features, and advanced analytics</p>
+              </div>
+            </div>
+            <button
+              onClick={() => window.location.hash = 'settings'}
+              className="bg-white text-blue-600 px-4 py-2 rounded-lg font-medium hover:bg-blue-50 transition-colors"
+            >
+              Upgrade
+            </button>
+          </div>
+        </div>
+      )}
+      
       {/* Welcome Section */}
       <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl p-4 sm:p-6 text-white">
         <h1 className="text-xl sm:text-2xl font-bold mb-2">Welcome, {firstName}!</h1>
-        <p className="text-blue-100">Here's your health overview for today</p>
+        <div className="flex items-center justify-between">
+          <p className="text-blue-100">Here's your health overview for today</p>
+          {isPremium && (
+            <div className="flex items-center space-x-1 bg-white bg-opacity-20 px-2 py-1 rounded-full">
+              <Crown className="h-4 w-4 text-yellow-300" />
+              <span className="text-xs font-medium">Premium</span>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Health Metrics Grid */}

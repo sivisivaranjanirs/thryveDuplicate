@@ -12,11 +12,13 @@ import {
   Check,
   X,
   AlertCircle,
-  Bell
+  Bell,
+  Crown
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
 import PushNotificationSettings from './PushNotificationSettings';
+import SubscriptionSettings from './SubscriptionSettings';
 
 interface ProfileFormData {
   full_name: string;
@@ -43,7 +45,7 @@ export default function ProfileSettings() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [editingField, setEditingField] = useState<string | null>(null);
-  const [activeSection, setActiveSection] = useState<'profile' | 'notifications'>('profile');
+  const [activeSection, setActiveSection] = useState<'profile' | 'notifications' | 'subscription'>('profile');
 
   // Load user data on component mount
   useEffect(() => {
@@ -286,6 +288,17 @@ export default function ProfileSettings() {
             <span>Profile Information</span>
           </button>
           <button
+            onClick={() => setActiveSection('subscription')}
+            className={`flex items-center space-x-2 px-4 sm:px-6 py-3 sm:py-4 font-medium transition-colors ${
+              activeSection === 'subscription'
+                ? 'text-blue-600 border-b-2 border-blue-600'
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            <Crown className="h-5 w-5" />
+            <span>Subscription</span>
+          </button>
+          <button
             onClick={() => setActiveSection('notifications')}
             className={`flex items-center space-x-2 px-4 sm:px-6 py-3 sm:py-4 font-medium transition-colors ${
               activeSection === 'notifications'
@@ -317,7 +330,7 @@ export default function ProfileSettings() {
       )}
 
       {/* Content based on active section */}
-      {activeSection === 'profile' ? (
+      {activeSection === 'profile' && (
         <div className="space-y-6">
           <div className="flex items-center space-x-3 mb-6">
             <div className="p-2 bg-blue-100 rounded-lg">
@@ -401,7 +414,13 @@ export default function ProfileSettings() {
             </button>
           </div>
         </div>
-      ) : (
+      )}
+      
+      {activeSection === 'subscription' && (
+        <SubscriptionSettings />
+      )}
+      
+      {activeSection === 'notifications' && (
         <PushNotificationSettings />
       )}
     </div>

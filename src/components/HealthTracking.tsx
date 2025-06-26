@@ -15,6 +15,8 @@ import {
   MicOff
 } from 'lucide-react';
 import { useHealthMetrics } from '../hooks/useHealthMetrics';
+import { useSubscription } from '../hooks/useSubscription';
+import PremiumFeatureGate from './PremiumFeatureGate';
 
 const healthCategories = [
   { id: 'blood_pressure', name: 'Blood Pressure', shortName: 'BP', icon: Heart, unit: 'mmHg', color: 'red', placeholder: '120/80' },
@@ -64,6 +66,8 @@ export default function HealthTracking() {
     addMetric, 
     deleteMetric 
   } = useHealthMetrics();
+  
+  const { isPremium } = useSubscription();
 
   const selectedCategoryData = healthCategories.find(cat => cat.id === selectedCategory);
   const categoryRecords = allMetrics.filter(record => record.metric_type === selectedCategory);
@@ -406,6 +410,20 @@ export default function HealthTracking() {
       setSubmitting(false);
       return;
     }
+    
+    // Check premium limits for free users
+    if (!isPremium) {
+      const today = new Date().toDateString();
+      const todayMetrics = allMetrics.filter(metric => 
+        new Date(metric.recorded_at).toDateString() === today
+      );
+      
+      if (todayMetrics.length + metricsToAdd.length > 5) {
+        alert('Free users can add up to 5 health readings per day. Upgrade to Premium for unlimited tracking!');
+        setSubmitting(false);
+        return;
+      }
+    }
 
     try {
       // Add all metrics
@@ -459,13 +477,32 @@ export default function HealthTracking() {
               <p className="text-sm sm:text-base text-gray-600">Monitor and track your health metrics</p>
             </div>
             <div className="flex space-x-2 w-full sm:w-auto">
-              <button
-                onClick={() => setShowVoiceRecording(true)}
-                className="flex-1 sm:flex-none bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center space-x-2 font-medium"
-              >
-                <Mic className="h-5 w-5 flex-shrink-0" />
-                <span>Voice Entry</span>
-              </button>
+              {isPremium ? (
+                <button
+                  onClick={() => setShowVoiceRecording(true)}
+                  className="flex-1 sm:flex-none bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center space-x-2 font-medium"
+                >
+                  <Mic className="h-5 w-5 flex-shrink-0" />
+                  <span>Voice Entry</span>
+                </button>
+              ) : (
+                <PremiumFeatureGate
+                  feature="Voice Entry"
+                  description="Use voice commands to quickly add health readings"
+                  fallback={
+                    <button
+                      onClick={() => {}}
+                      className="flex-1 sm:flex-none bg-gray-400 text-white px-4 py-2 rounded-lg cursor-not-allowed flex items-center justify-center space-x-2 font-medium relative"
+                    >
+                      <Mic className="h-5 w-5 flex-shrink-0" />
+                      <span>Voice Entry</span>
+                      <Crown className="h-4 w-4 text-yellow-300 absolute -top-1 -right-1" />
+                    </button>
+                  }
+                >
+                  <div></div>
+                </PremiumFeatureGate>
+              )}
               <button
                 onClick={() => setShowAddForm(true)}
                 className="flex-1 sm:flex-none bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center space-x-2 font-medium"
@@ -556,18 +593,22 @@ export default function HealthTracking() {
                   </div>
                   <p className="text-gray-500 text-sm sm:text-base">No readings recorded yet</p>
                   <div className="flex flex-col sm:flex-row gap-2 justify-center mt-4">
-                    <button
-                      onClick={() => setShowVoiceRecording(true)}
-                      className="text-green-600 hover:text-green-700 font-medium text-sm sm:text-base"
-                    >
-                      Add via voice
-                    </button>
-                    <span className="text-gray-400 hidden sm:inline">or</span>
+                    {isPremium && (
+                      <>
+                        <button
+                          onClick={() => setShowVoiceRecording(true)}
+                          className="text-green-600 hover:text-green-700 font-medium text-sm sm:text-base"
+                        >
+                          Add via voice
+                        </button>
+                        <span className="text-gray-400 hidden sm:inline">or</span>
+                      </>
+                    )}
                     <button
                       onClick={() => setShowAddForm(true)}
                       className="text-blue-600 hover:text-blue-700 font-medium text-sm sm:text-base"
                     >
-                      Add manually
+                      {isPremium ? 'Add manually' : 'Add your first reading'}
                     </button>
                   </div>
                 </div>
