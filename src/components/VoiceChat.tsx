@@ -82,7 +82,16 @@ export default function VoiceChat() {
 
   const handleStartRecording = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      console.log('VoiceChat: Starting recording...');
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        audio: {
+          sampleRate: 16000, // Optimize for speech recognition
+          channelCount: 1,   // Mono audio
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true
+        } 
+      });
       
       // Create audio context for visualization
       const context = new (window.AudioContext || (window as any).webkitAudioContext)();
@@ -105,18 +114,23 @@ export default function VoiceChat() {
       
       visualizationRef.current = requestAnimationFrame(updateVisualization);
       
-      // Set up media recorder
-      const recorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+      // Set up media recorder with optimal settings for speech
+      const recorder = new MediaRecorder(stream, { 
+        mimeType: 'audio/webm;codecs=opus' // Opus codec is good for speech
+      });
       const chunks: Blob[] = [];
 
       recorder.ondataavailable = (event) => {
         if (event.data.size > 0) {
           chunks.push(event.data);
+          console.log('VoiceChat: Audio chunk received, size:', event.data.size);
         }
       };
 
       recorder.onstop = () => {
-        const audioBlob = new Blob(chunks, { type: 'audio/wav' });
+        console.log('VoiceChat: Recording stopped, processing audio...');
+        const audioBlob = new Blob(chunks, { type: 'audio/webm' });
+        console.log('VoiceChat: Created audio blob, size:', audioBlob.size);
         handleVoiceRecordingComplete(audioBlob);
         stream.getTracks().forEach(track => track.stop());
       };
@@ -125,14 +139,16 @@ export default function VoiceChat() {
       setMediaRecorder(recorder);
       setAudioChunks(chunks);
       setIsRecording(true);
+      console.log('VoiceChat: Recording started successfully');
     } catch (error) {
-      console.error('Error accessing microphone:', error);
+      console.error('VoiceChat: Error accessing microphone:', error);
       alert('Unable to access microphone. Please check your permissions and try again.');
     }
   };
 
   const handleStopRecording = () => {
     try {
+      console.log('VoiceChat: Stopping recording...');
       if (mediaRecorder && mediaRecorder.state === 'recording') {
         mediaRecorder.stop();
       }
@@ -152,23 +168,32 @@ export default function VoiceChat() {
       setAudioContext(null);
       setAnalyser(null);
       setVisualizationData(null);
+      console.log('VoiceChat: Recording stopped successfully');
     } catch (error) {
-      console.error('Error stopping recording:', error);
+      console.error('VoiceChat: Error stopping recording:', error);
     }
   };
 
   const handleVoiceRecordingComplete = async (audioBlob: Blob) => {
+    console.log('VoiceChat: Processing voice recording...');
     setIsProcessingVoice(true);
     
     try {
-      // Convert webm audio to WAV format
+      // Convert webm audio to WAV format for better compatibility
       const wavBlob = await convertWebmToWav(audioBlob);
-      await sendVoiceRecording(wavBlob);
+      console.log('VoiceChat: Converted to WAV, size:', wavBlob.size);
+      
+      // Send to STT service
+      const result = await sendVoiceRecording(wavBlob);
+      
+      if (result?.error) {
+        console.error('VoiceChat: Voice processing failed:', result.error);
+        // Show error to user but don't use fallback
+        alert(`Voice processing failed: ${result.error}`);
+      }
     } catch (error) {
-      console.error('Speech recognition error:', error);
-      // Fallback to simulated transcription
-      const simulatedTranscription = "I've been having headaches lately and I'm concerned about my blood pressure.";
-      handleSendMessage(simulatedTranscription, true);
+      console.error('VoiceChat: Voice recording processing error:', error);
+      alert(`Voice processing error: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setIsProcessingVoice(false);
     }
@@ -177,6 +202,7 @@ export default function VoiceChat() {
   // Convert webm audio blob to WAV format
   const convertWebmToWav = async (webmBlob: Blob): Promise<Blob> => {
     try {
+      console.log('VoiceChat: Converting WebM to WAV...');
       // Create audio context
       const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
       
@@ -190,15 +216,18 @@ export default function VoiceChat() {
       const audioData = audioBuffer.getChannelData(0); // Get first channel (mono)
       const sampleRate = audioBuffer.sampleRate;
       
+      console.log('VoiceChat: Audio data length:', audioData.length, 'Sample rate:', sampleRate);
+      
       // Use the convertToWav utility from useChat hook
       const wavBlob = convertToWav(audioData, sampleRate);
       
       // Clean up audio context
       await audioContext.close();
       
+      console.log('VoiceChat: Successfully converted to WAV');
       return wavBlob;
     } catch (error) {
-      console.error('Error converting webm to wav:', error);
+      console.error('VoiceChat: Error converting webm to wav:', error);
       throw new Error('Failed to convert audio format');
     }
   };
@@ -210,7 +239,7 @@ export default function VoiceChat() {
     const result = await sendMessageToLLM(content, isVoice);
     
     if (result?.error) {
-      console.error('Send message error:', result.error);
+      console.error('VoiceChat: Send message error:', result.error);
       // Don't show alert for now, error will be displayed in the UI
     }
   };
@@ -459,6 +488,23 @@ export default function VoiceChat() {
           )}
         </AnimatePresence>
 
+        {/* Processing Voice Message */}
+        <AnimatePresence>
+          {isProcessingVoice && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              className="mx-4 sm:mx-6 mb-2 p-3 bg-green-50 border border-green-200 rounded-lg"
+            >
+              <div className="flex items-center justify-center space-x-2">
+                <Loader2 className="h-4 w-4 animate-spin text-green-600" />
+                <span className="text-sm text-green-700">Processing your voice message...</span>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* Error Display */}
         {error && (
           <div className="mx-4 sm:mx-6 mb-2 p-3 bg-red-50 border border-red-200 rounded-lg">
@@ -477,7 +523,7 @@ export default function VoiceChat() {
                   ? 'bg-red-500 text-white shadow-lg scale-110 animate-pulse'
                   : 'bg-blue-600 text-white hover:bg-blue-700 shadow-md'
               }`}
-              title="Voice chat coming soon"
+              title={isRecording ? 'Stop recording' : 'Start voice recording'}
             >
               {isRecording ? <MicOff className="h-6 w-6" /> : <Mic className="h-6 w-6" />}
             </button>
@@ -488,7 +534,7 @@ export default function VoiceChat() {
                 value={isProcessingVoice ? "Processing your voice message..." : textInput}
                 onChange={(e) => setTextInput(e.target.value)}
                 placeholder="Type your health question..."
-                disabled={loading}
+                disabled={loading || isProcessingVoice}
                 className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50"
               />
               <button

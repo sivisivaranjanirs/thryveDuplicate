@@ -244,10 +244,14 @@ export function useChat() {
       setLoading(true);
       setError(null);
 
+      console.log('Voice recording: Starting STT process');
+      console.log('Audio blob size:', audioBlob.size, 'type:', audioBlob.type);
+
       // Convert blob to base64
       const base64Audio = await blobToBase64(audioBlob);
+      console.log('Voice recording: Converted to base64, length:', base64Audio.length);
 
-      // Send to Eleven Labs STT
+      // Send to Eleven Labs STT (Scribe v1)
       const sttResponse = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/eleven-labs-stt`, {
         method: 'POST',
         headers: {
@@ -259,15 +263,22 @@ export function useChat() {
         }),
       });
 
+      console.log('Voice recording: STT response status:', sttResponse.status);
+
       if (!sttResponse.ok) {
-        throw new Error(`Speech-to-text error: ${sttResponse.status}`);
+        const errorText = await sttResponse.text();
+        console.error('Voice recording: STT error response:', errorText);
+        throw new Error(`Speech-to-text error: ${sttResponse.status} - ${errorText}`);
       }
 
       const sttData = await sttResponse.json();
+      console.log('Voice recording: STT response data:', sttData);
       
       if (!sttData.success || !sttData.text) {
         throw new Error(sttData.error || 'Failed to transcribe audio');
       }
+
+      console.log('Voice recording: Transcribed text:', sttData.text);
 
       // Send transcribed text to LLM
       return await sendMessageToLLM(sttData.text, true);
