@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Mic, MicOff, Send, Volume2, VolumeX, Plus, MessageSquare, Trash2, Loader2, X } from 'lucide-react';
+import { Mic, MicOff, Send, Volume2, VolumeX, Plus, MessageSquare, Trash2, Loader2, X, Waveform } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useChat } from '../hooks/useChat';
 
@@ -15,10 +15,14 @@ export default function VoiceChat() {
   const [isRecording, setIsRecording] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [textInput, setTextInput] = useState('');
-  const [isListening, setIsListening] = useState(false);
   const [showConversations, setShowConversations] = useState(false);
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
   const [audioChunks, setAudioChunks] = useState<Blob[]>([]);
+  const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
+  const [analyser, setAnalyser] = useState<AnalyserNode | null>(null);
+  const [visualizationData, setVisualizationData] = useState<Uint8Array | null>(null);
+  const [isProcessingVoice, setIsProcessingVoice] = useState(false);
+  const visualizationRef = useRef<number | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const {
@@ -28,6 +32,8 @@ export default function VoiceChat() {
     loading,
     error,
     sendMessageToLLM,
+    sendVoiceRecording,
+    convertToWav,
     switchConversation,
     startNewConversation,
     deleteConversation,
@@ -62,10 +68,45 @@ export default function VoiceChat() {
     scrollToBottom();
   }, [messages]);
 
+  // Clean up audio visualization on unmount
+  useEffect(() => {
+    return () => {
+      if (visualizationRef.current) {
+        cancelAnimationFrame(visualizationRef.current);
+      }
+      if (audioContext) {
+        audioContext.close();
+      }
+    };
+  }, [audioContext]);
+
   const handleStartRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const recorder = new MediaRecorder(stream);
+      
+      // Create audio context for visualization
+      const context = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const source = context.createMediaStreamSource(stream);
+      const analyserNode = context.createAnalyser();
+      analyserNode.fftSize = 256;
+      source.connect(analyserNode);
+      
+      setAudioContext(context);
+      setAnalyser(analyserNode);
+      
+      // Start visualization
+      const dataArray = new Uint8Array(analyserNode.frequencyBinCount);
+      
+      const updateVisualization = () => {
+        analyserNode.getByteFrequencyData(dataArray);
+        setVisualizationData(new Uint8Array(dataArray));
+        visualizationRef.current = requestAnimationFrame(updateVisualization);
+      };
+      
+      visualizationRef.current = requestAnimationFrame(updateVisualization);
+      
+      // Set up media recorder
+      const recorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
       const chunks: Blob[] = [];
 
       recorder.ondataavailable = (event) => {
@@ -83,7 +124,6 @@ export default function VoiceChat() {
       recorder.start();
       setMediaRecorder(recorder);
       setAudioChunks(chunks);
-      setIsRecording(true);
       setIsListening(true);
     } catch (error) {
       console.error('Error accessing microphone:', error);
@@ -92,31 +132,38 @@ export default function VoiceChat() {
   };
 
   const handleStopRecording = () => {
-    if (mediaRecorder && mediaRecorder.state === 'recording') {
-      mediaRecorder.stop();
+    try {
+      if (mediaRecorder && mediaRecorder.state === 'recording') {
+        mediaRecorder.stop();
+      }
+      
+      // Stop visualization
+      if (visualizationRef.current) {
+        cancelAnimationFrame(visualizationRef.current);
+        visualizationRef.current = null;
+      }
+      
+      // Close audio context
+      if (audioContext && audioContext.state !== 'closed') {
+        audioContext.close().catch(console.error);
+      }
+      
+      setIsRecording(false);
+      setAudioContext(null);
+      setAnalyser(null);
+      setVisualizationData(null);
+    } catch (error) {
+      console.error('Error stopping recording:', error);
     }
-    setIsRecording(false);
-    setIsListening(false);
-    setMediaRecorder(null);
   };
 
   const handleVoiceRecordingComplete = async (audioBlob: Blob) => {
     try {
-      // Try to use Web Speech API for speech-to-text
-      if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-        const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-        const recognition = new SpeechRecognition();
-        
-        recognition.continuous = false;
-        recognition.interimResults = false;
-        recognition.lang = 'en-US';
-        
-        recognition.onresult = (event: any) => {
-          const transcript = event.results[0][0].transcript;
-          handleSendMessage(transcript, true);
-        };
-        
-        recognition.onerror = (event: any) => {
+      setIsProcessingVoice(true);
+      
+      try {
+        await sendVoiceRecording(audioBlob);
+      } catch (error) {
           console.error('Speech recognition error:', event.error);
           // Fallback to simulated transcription
           const simulatedTranscription = "I've been having headaches lately and I'm concerned about my blood pressure.";
@@ -124,20 +171,8 @@ export default function VoiceChat() {
         };
         
         // Convert audio blob to audio element and play it for recognition
-        const audioUrl = URL.createObjectURL(audioBlob);
-        const audio = new Audio(audioUrl);
-        
-        // For now, since we can't easily feed the recorded audio to speech recognition,
-        // we'll use a simulated transcription but keep the real recording infrastructure
-        const simulatedTranscription = "I've been having headaches lately and I'm concerned about my blood pressure.";
-        handleSendMessage(simulatedTranscription, true);
-        
-        // Clean up
-        URL.revokeObjectURL(audioUrl);
-      } else {
-        // Fallback for browsers without speech recognition
-        const simulatedTranscription = "I've been having headaches lately and I'm concerned about my blood pressure.";
-        handleSendMessage(simulatedTranscription, true);
+      } finally {
+        setIsProcessingVoice(false);
       }
     } catch (error) {
       console.error('Error processing voice recording:', error);
@@ -145,7 +180,7 @@ export default function VoiceChat() {
       const simulatedTranscription = "I've been having headaches lately and I'm concerned about my blood pressure.";
       handleSendMessage(simulatedTranscription, true);
     }
-  };
+  };  
 
   const handleSendMessage = async (content: string, isVoice = false) => {
     if (!content.trim()) return;
@@ -153,7 +188,7 @@ export default function VoiceChat() {
     setTextInput('');
     const result = await sendMessageToLLM(content, isVoice);
     
-    if (result.error) {
+    if (result?.error) {
       console.error('Send message error:', result.error);
       // Don't show alert for now, error will be displayed in the UI
     }
@@ -162,6 +197,10 @@ export default function VoiceChat() {
   const handleTextSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     handleSendMessage(textInput);
+  };
+
+  const handleToggleSpeech = () => {
+    setIsSpeaking(!isSpeaking);
   };
 
   const toggleSpeech = () => {
@@ -176,6 +215,27 @@ export default function VoiceChat() {
         alert(`Error deleting conversation: ${error}`);
       }
     }
+  };
+
+  // Render audio visualization bars
+  const renderVisualization = () => {
+    if (!visualizationData) return null;
+    
+    // Only show a subset of bars for better visualization
+    const barCount = 20;
+    const step = Math.floor(visualizationData.length / barCount);
+    
+    return (
+      <div className="flex items-end justify-center space-x-1 h-12">
+        {Array.from({ length: barCount }).map((_, i) => {
+          const value = visualizationData[i * step] || 0;
+          const height = Math.max(4, (value / 255) * 48); // Min height 4px, max 48px
+          return (
+            <div key={i} className="w-1 bg-blue-500 rounded-full" style={{ height: `${height}px` }}></div>
+          );
+        })}
+      </div>
+    );
   };
 
   return (
@@ -358,7 +418,7 @@ export default function VoiceChat() {
         </div>
 
         {/* Voice Recording Indicator */}
-        <AnimatePresence>
+        {/* <AnimatePresence>
           {isListening && (
             <motion.div
               initial={{ opacity: 0, scale: 0.8 }}
@@ -376,6 +436,27 @@ export default function VoiceChat() {
               </div>
             </motion.div>
           )}
+        </AnimatePresence> */}
+
+        {/* Voice Recording Visualization */}
+        <AnimatePresence>
+          {isRecording && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              className="mx-4 sm:mx-6 mb-2 p-3 bg-blue-50 border border-blue-200 rounded-lg"
+            >
+              <div className="flex flex-col items-center space-y-2">
+                <div className="flex items-center space-x-2">
+                  <Waveform className="h-4 w-4 text-blue-600 animate-pulse" />
+                  <span className="text-sm text-blue-700">Recording...</span>
+                </div>
+                
+                {renderVisualization()}
+              </div>
+            </motion.div>
+          )}
         </AnimatePresence>
 
         {/* Error Display */}
@@ -389,11 +470,11 @@ export default function VoiceChat() {
         <div className="bg-white border-t border-gray-200 p-4 sm:p-6">
           <div className="flex items-center space-x-2">
             <button
-              onClick={isRecording ? handleStopRecording : handleStartRecording}
-              disabled={true}
+              onClick={isProcessingVoice ? undefined : isRecording ? handleStopRecording : handleStartRecording}
+              disabled={isProcessingVoice}
               className={`p-3 rounded-full transition-all duration-200 disabled:opacity-50 ${
                 isRecording
-                  ? 'bg-red-500 text-white shadow-lg scale-110'
+                  ? 'bg-red-500 text-white shadow-lg scale-110 animate-pulse'
                   : 'bg-blue-600 text-white hover:bg-blue-700 shadow-md'
               }`}
               title="Voice chat coming soon"
@@ -404,7 +485,7 @@ export default function VoiceChat() {
             <form onSubmit={handleTextSubmit} className="flex-1 flex space-x-2">
               <input
                 type="text"
-                value={textInput}
+                value={isProcessingVoice ? "Processing your voice message..." : textInput}
                 onChange={(e) => setTextInput(e.target.value)}
                 placeholder="Type your health question..."
                 disabled={loading}
@@ -412,7 +493,7 @@ export default function VoiceChat() {
               />
               <button
                 type="submit"
-                disabled={!textInput.trim() || loading}
+                disabled={!textInput.trim() || loading || isProcessingVoice}
                 className="p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 <Send className="h-5 w-5" />

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase, ChatConversation, ChatMessage } from '../lib/supabase';
 import { useAuth } from './useAuth';
+import { WaveFile } from 'wavefile';
 
 export function useChat() {
   const [conversations, setConversations] = useState<ChatConversation[]>([]);
@@ -134,7 +135,7 @@ export function useChat() {
   };
 
   // Send message to LLM and get response
-  const sendMessageToLLM = async (message: string, isVoice = false) => {
+  const sendMessageToLLM = async (message: string, isVoice = false, playAudio = true) => {
     if (!user) return { error: 'User not authenticated' };
 
     try {
@@ -196,6 +197,34 @@ export function useChat() {
         throw new Error(`Failed to add AI response: ${aiMessageResult.error}`);
       }
 
+      // Convert AI response to speech if needed
+      if (playAudio) {
+        try {
+          const ttsResponse = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/eleven-labs-tts`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              text: data.response
+            }),
+          });
+
+          if (ttsResponse.ok) {
+            const ttsData = await ttsResponse.json();
+            if (ttsData.success && ttsData.audioBase64) {
+              // Play the audio
+              const audio = new Audio(`data:${ttsData.format};base64,${ttsData.audioBase64}`);
+              audio.play();
+            }
+          }
+        } catch (ttsError) {
+          console.error('TTS error:', ttsError);
+          // Continue even if TTS fails
+        }
+      }
+
       return { success: true, error: null };
     } catch (err) {
       const error = err instanceof Error ? err.message : 'An error occurred';
@@ -205,6 +234,88 @@ export function useChat() {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Send voice recording to STT and then to LLM
+  const sendVoiceRecording = async (audioBlob: Blob) => {
+    if (!user) return { error: 'User not authenticated' };
+
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Convert blob to base64
+      const base64Audio = await blobToBase64(audioBlob);
+
+      // Send to Eleven Labs STT
+      const sttResponse = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/eleven-labs-stt`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          audioBase64: base64Audio
+        }),
+      });
+
+      if (!sttResponse.ok) {
+        throw new Error(`Speech-to-text error: ${sttResponse.status}`);
+      }
+
+      const sttData = await sttResponse.json();
+      
+      if (!sttData.success || !sttData.text) {
+        throw new Error(sttData.error || 'Failed to transcribe audio');
+      }
+
+      // Send transcribed text to LLM
+      return await sendMessageToLLM(sttData.text, true);
+    } catch (err) {
+      const error = err instanceof Error ? err.message : 'An error occurred';
+      setError(error);
+      console.error('Voice processing error:', err);
+      return { error };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Helper function to convert Blob to base64
+  const blobToBase64 = (blob: Blob): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result as string;
+        // Remove the data URL prefix (e.g., "data:audio/wav;base64,")
+        const base64 = base64String.split(',')[1];
+        resolve(base64);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  };
+
+  // Convert raw PCM audio data to WAV format
+  const convertToWav = (audioBuffer: Float32Array, sampleRate: number): Blob => {
+    // Create a WaveFile instance
+    const wav = new WaveFile();
+    
+    // Convert Float32Array to Int16Array for better compatibility
+    const intData = new Int16Array(audioBuffer.length);
+    for (let i = 0; i < audioBuffer.length; i++) {
+      // Convert float to int, scale to 16-bit range
+      intData[i] = Math.max(-32768, Math.min(32767, Math.floor(audioBuffer[i] * 32767)));
+    }
+    
+    // Create WAV from the samples
+    wav.fromScratch(1, sampleRate, '16', intData);
+    
+    // Get WAV file buffer
+    const wavBuffer = wav.toBuffer();
+    
+    // Convert buffer to Blob
+    return new Blob([wavBuffer], { type: 'audio/wav' });
   };
 
   // Switch to a different conversation
@@ -262,6 +373,8 @@ export function useChat() {
     loading,
     error,
     sendMessageToLLM,
+    sendVoiceRecording,
+    convertToWav,
     switchConversation,
     startNewConversation,
     deleteConversation,

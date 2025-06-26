@@ -578,7 +578,7 @@ Components automatically update when underlying data changes:
 ## API Integration
 
 ### Hugging Face Integration
-The application integrates with Hugging Face's Inference API for AI conversations:
+The application integrates with Hugging Face's Inference API for AI conversations and Eleven Labs for voice capabilities:
 
 #### Model Configuration
 - **Model**: `mistralai/Mistral-7B-Instruct-v0.3`
@@ -601,6 +601,26 @@ You speak like a thoughtful, understanding friend — not a doctor, not a bot. A
 • Mindfulness, self-care, and healthy habits
 
 🚫 Avoid or decline:
+• Conversations not related to health or well-being`;
+
+### Eleven Labs Integration
+The application integrates with Eleven Labs for voice capabilities:
+
+#### Text-to-Speech (TTS)
+- **Voice ID**: `EXAVITQu4vr4xnSDxMaL` (Rachel voice)
+- **Model**: `eleven_monolingual_v1`
+- **Voice Settings**:
+  - `stability`: 0.5
+  - `similarity_boost`: 0.75
+
+#### Speech-to-Text (STT)
+- **Model**: `whisper-1`
+- **Language**: English (default)
+
+#### Integration Flow
+1. User voice input is captured and sent to Eleven Labs STT
+2. Transcribed text is sent to Hugging Face LLM
+3. LLM response is sent to Eleven Labs TTS
 • Conversations not related to health or well-being
 • Diagnosing medical conditions or providing medical treatment
 • Sensitive topics that require professional help`;
@@ -665,6 +685,7 @@ Required environment variables for deployment:
 # Supabase Configuration
 VITE_SUPABASE_URL=your_supabase_url
 VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+ELEVEN_LABS_API_KEY=your_eleven_labs_api_key
 
 # Hugging Face API (for Edge Functions)
 HF_API_KEY=your_hugging_face_api_key
