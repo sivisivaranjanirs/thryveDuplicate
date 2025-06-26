@@ -10,7 +10,8 @@ import {
   Thermometer,
   Scale,
   Loader2,
-  Plus
+  Plus,
+  Crown
 } from 'lucide-react';
 import { useHealthMetrics } from '../hooks/useHealthMetrics';
 import { useAuth } from '../hooks/useAuth';
