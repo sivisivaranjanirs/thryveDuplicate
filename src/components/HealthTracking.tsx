@@ -12,7 +12,8 @@ import {
   Loader2,
   Trash2,
   Mic,
-  MicOff
+  MicOff,
+  Crown
 } from 'lucide-react';
 import { useHealthMetrics } from '../hooks/useHealthMetrics';
 import { useSubscription } from '../hooks/useSubscription';
