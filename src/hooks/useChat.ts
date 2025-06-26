@@ -162,37 +162,11 @@ export function useChat() {
         throw new Error(`Failed to add user message: ${userMessageResult.error}`);
       }
 
-      // Prepare conversation history for context
-      const conversationHistory = messages.map(msg => ({
-        role: msg.message_type as 'user' | 'assistant',
-        content: msg.content
-      }));
-
-      // Call LLM edge function
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/llm-chat`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          message,
-          conversationHistory
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-
-      if (!data.success) {
-        throw new Error(data.error || 'Failed to get AI response');
-      }
+      // Generate hardcoded response based on message content
+      const aiResponse = generateHardcodedResponse(message);
 
       // Add AI response using explicit conversation ID
-      const aiMessageResult = await addMessage(data.response, 'assistant', conversation.id);
+      const aiMessageResult = await addMessage(aiResponse, 'assistant', conversation.id);
       if (aiMessageResult.error) {
         throw new Error(`Failed to add AI response: ${aiMessageResult.error}`);
       }
@@ -207,7 +181,7 @@ export function useChat() {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-              text: data.response
+              text: aiResponse
             }),
           });
 
@@ -236,6 +210,91 @@ export function useChat() {
     }
   };
 
+  // Generate hardcoded responses based on message content
+  const generateHardcodedResponse = (message: string): string => {
+    const lowerMessage = message.toLowerCase();
+    
+    // Health-related responses
+    if (lowerMessage.includes('blood pressure') || lowerMessage.includes('bp')) {
+      return "Blood pressure is an important indicator of cardiovascular health. Normal blood pressure is typically around 120/80 mmHg. Regular monitoring can help you track patterns and identify any concerning changes. Have you been tracking your blood pressure regularly?";
+    }
+    
+    if (lowerMessage.includes('heart rate') || lowerMessage.includes('pulse')) {
+      return "Your heart rate can tell us a lot about your cardiovascular fitness and overall health. A normal resting heart rate for adults is typically between 60-100 beats per minute. Athletes often have lower resting heart rates. What's prompting you to ask about heart rate?";
+    }
+    
+    if (lowerMessage.includes('weight') || lowerMessage.includes('lose weight') || lowerMessage.includes('diet')) {
+      return "Weight management is about creating sustainable, healthy habits rather than quick fixes. Focus on balanced nutrition, regular physical activity, adequate sleep, and stress management. Small, consistent changes often lead to the most lasting results. What aspect of weight management would you like to explore?";
+    }
+    
+    if (lowerMessage.includes('sleep') || lowerMessage.includes('tired') || lowerMessage.includes('insomnia')) {
+      return "Good sleep is fundamental to your physical and mental health. Most adults need 7-9 hours of quality sleep per night. Creating a consistent bedtime routine, limiting screen time before bed, and keeping your bedroom cool and dark can help improve sleep quality. How has your sleep been lately?";
+    }
+    
+    if (lowerMessage.includes('exercise') || lowerMessage.includes('workout') || lowerMessage.includes('fitness')) {
+      return "Regular physical activity is one of the best things you can do for your health. The CDC recommends at least 150 minutes of moderate-intensity aerobic activity per week, plus muscle-strengthening activities twice a week. The key is finding activities you enjoy so you'll stick with them. What types of physical activities do you currently enjoy?";
+    }
+    
+    if (lowerMessage.includes('stress') || lowerMessage.includes('anxiety') || lowerMessage.includes('worried')) {
+      return "Stress is a normal part of life, but chronic stress can impact both your physical and mental health. Some effective stress management techniques include deep breathing exercises, regular physical activity, mindfulness or meditation, and maintaining social connections. What's been causing you stress lately?";
+    }
+    
+    if (lowerMessage.includes('temperature') || lowerMessage.includes('fever')) {
+      return "Body temperature can be an important indicator of your health status. Normal body temperature is typically around 98.6°F (37°C), but can vary slightly from person to person and throughout the day. A fever is generally considered 100.4°F (38°C) or higher. Are you monitoring your temperature for a specific reason?";
+    }
+    
+    if (lowerMessage.includes('glucose') || lowerMessage.includes('blood sugar') || lowerMessage.includes('diabetes')) {
+      return "Blood glucose monitoring is crucial for managing diabetes and understanding how your body responds to food, exercise, and stress. Normal fasting blood glucose is typically 70-100 mg/dL. If you have diabetes, your healthcare provider will help you determine your target ranges. How often do you check your blood glucose?";
+    }
+    
+    // Wellness and lifestyle responses
+    if (lowerMessage.includes('water') || lowerMessage.includes('hydration') || lowerMessage.includes('drink')) {
+      return "Staying well-hydrated is essential for your body to function properly. A general guideline is about 8 glasses (64 ounces) of water per day, but your needs may vary based on activity level, climate, and overall health. Signs of good hydration include pale yellow urine and feeling energetic. How much water do you typically drink in a day?";
+    }
+    
+    if (lowerMessage.includes('nutrition') || lowerMessage.includes('eating') || lowerMessage.includes('food')) {
+      return "Good nutrition provides your body with the energy and nutrients it needs to function optimally. Focus on a variety of whole foods including fruits, vegetables, lean proteins, whole grains, and healthy fats. Eating regular, balanced meals can help maintain steady energy levels throughout the day. What does a typical day of eating look like for you?";
+    }
+    
+    // Mental health responses
+    if (lowerMessage.includes('mood') || lowerMessage.includes('depression') || lowerMessage.includes('sad')) {
+      return "Your emotional well-being is just as important as your physical health. It's normal to have ups and downs, but persistent feelings of sadness or changes in mood might benefit from professional support. Regular exercise, social connections, and stress management can all support mental health. How have you been feeling emotionally lately?";
+    }
+    
+    // General health responses
+    if (lowerMessage.includes('health') || lowerMessage.includes('wellness') || lowerMessage.includes('healthy')) {
+      return "Health is multifaceted - it includes physical, mental, and social well-being. The foundations of good health typically include regular physical activity, balanced nutrition, adequate sleep, stress management, and maintaining social connections. Small, consistent healthy choices can make a big difference over time. What aspect of your health would you like to focus on?";
+    }
+    
+    if (lowerMessage.includes('doctor') || lowerMessage.includes('medical') || lowerMessage.includes('appointment')) {
+      return "Regular check-ups with healthcare providers are an important part of maintaining your health. They can help with preventive care, early detection of potential issues, and management of existing conditions. If you have specific health concerns, it's always best to discuss them with a qualified healthcare professional. Is there something specific you're considering discussing with your doctor?";
+    }
+    
+    // Greeting responses
+    if (lowerMessage.includes('hello') || lowerMessage.includes('hi') || lowerMessage.includes('hey')) {
+      return "Hello! I'm here to support you with your health and wellness journey. Whether you want to discuss tracking your health metrics, talk about wellness goals, or just check in about how you're feeling, I'm here to listen and help. What's on your mind today?";
+    }
+    
+    if (lowerMessage.includes('how are you') || lowerMessage.includes('how do you do')) {
+      return "Thank you for asking! I'm here and ready to help you with any health and wellness questions or concerns you might have. More importantly, how are you doing today? I'd love to hear about how you're feeling or what's been on your mind regarding your health.";
+    }
+    
+    // Default responses for unmatched queries
+    const defaultResponses = [
+      "That's an interesting question about your health and wellness. Could you tell me a bit more about what's prompting this? I'm here to listen and help you think through whatever health-related concerns or goals you might have.",
+      
+      "I appreciate you sharing that with me. Health and wellness can be complex topics with many interconnected factors. What specific aspect would you like to explore further? I'm here to support your health journey.",
+      
+      "Thank you for bringing this up. Everyone's health journey is unique, and I'm here to help you navigate yours. Could you share a bit more context about what you're experiencing or what you're hoping to understand better?",
+      
+      "That's a thoughtful question. When it comes to health and wellness, it's often helpful to consider the bigger picture - how you're feeling physically, mentally, and emotionally. What's been on your mind lately regarding your well-being?",
+      
+      "I'm glad you're taking an active interest in your health. Self-awareness and reflection are important parts of maintaining wellness. What would be most helpful for you to discuss right now?"
+    ];
+    
+    // Return a random default response
+    return defaultResponses[Math.floor(Math.random() * defaultResponses.length)];
+  };
   // Send voice recording to STT and then to LLM
   const sendVoiceRecording = async (audioBlob: Blob) => {
     if (!user) return { error: 'User not authenticated' };
