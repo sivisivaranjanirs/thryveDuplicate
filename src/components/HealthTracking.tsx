@@ -10,7 +10,9 @@ import {
   TrendingUp,
   Edit3,
   Loader2,
-  Trash2
+  Trash2,
+  Mic,
+  MicOff
 } from 'lucide-react';
 import { useHealthMetrics } from '../hooks/useHealthMetrics';
 
@@ -40,6 +42,11 @@ interface MultiMetricFormData {
 export default function HealthTracking() {
   const [selectedCategory, setSelectedCategory] = useState('blood_pressure');
   const [showAddForm, setShowAddForm] = useState(false);
+  const [showVoiceRecording, setShowVoiceRecording] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [isProcessingVoice, setIsProcessingVoice] = useState(false);
+  const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
+  const [voiceError, setVoiceError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState<MultiMetricFormData>({
     blood_pressure: { value: '', notes: '' },
@@ -60,6 +67,289 @@ export default function HealthTracking() {
 
   const selectedCategoryData = healthCategories.find(cat => cat.id === selectedCategory);
   const categoryRecords = allMetrics.filter(record => record.metric_type === selectedCategory);
+
+  // Voice recording functions
+  const handleStartVoiceRecording = async () => {
+    try {
+      setVoiceError(null);
+      console.log('Starting voice recording for health metrics...');
+      
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        audio: {
+          sampleRate: 16000,
+          channelCount: 1,
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true
+        } 
+      });
+      
+      const recorder = new MediaRecorder(stream, { 
+        mimeType: 'audio/webm;codecs=opus'
+      });
+      
+      const chunks: Blob[] = [];
+
+      recorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          chunks.push(event.data);
+        }
+      };
+
+      recorder.onstop = () => {
+        const audioBlob = new Blob(chunks, { type: 'audio/webm' });
+        handleVoiceRecordingComplete(audioBlob);
+        stream.getTracks().forEach(track => track.stop());
+      };
+
+      recorder.start();
+      setMediaRecorder(recorder);
+      setIsRecording(true);
+    } catch (error) {
+      console.error('Error accessing microphone:', error);
+      setVoiceError('Unable to access microphone. Please check your permissions.');
+    }
+  };
+
+  const handleStopVoiceRecording = () => {
+    if (mediaRecorder && mediaRecorder.state === 'recording') {
+      mediaRecorder.stop();
+    }
+    setIsRecording(false);
+  };
+
+  const handleVoiceRecordingComplete = async (audioBlob: Blob) => {
+    setIsProcessingVoice(true);
+    setVoiceError(null);
+    
+    try {
+      // Convert webm to wav
+      const wavBlob = await convertWebmToWav(audioBlob);
+      
+      // Send to STT service
+      const transcription = await transcribeAudio(wavBlob);
+      
+      if (transcription) {
+        // Parse the transcription to extract health metrics
+        const parsedMetrics = parseHealthMetrics(transcription);
+        
+        if (parsedMetrics.length > 0) {
+          // Apply parsed metrics to form
+          applyParsedMetricsToForm(parsedMetrics);
+          setShowVoiceRecording(false);
+          setShowAddForm(true);
+        } else {
+          setVoiceError('Could not understand health metrics from your recording. Please try again or use manual entry.');
+        }
+      }
+    } catch (error) {
+      console.error('Voice processing error:', error);
+      setVoiceError(error instanceof Error ? error.message : 'Failed to process voice recording');
+    } finally {
+      setIsProcessingVoice(false);
+    }
+  };
+
+  const convertWebmToWav = async (webmBlob: Blob): Promise<Blob> => {
+    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const arrayBuffer = await webmBlob.arrayBuffer();
+    const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+    const audioData = audioBuffer.getChannelData(0);
+    const sampleRate = audioBuffer.sampleRate;
+    
+    // Simple WAV conversion
+    const length = audioData.length;
+    const buffer = new ArrayBuffer(44 + length * 2);
+    const view = new DataView(buffer);
+    
+    // WAV header
+    const writeString = (offset: number, string: string) => {
+      for (let i = 0; i < string.length; i++) {
+        view.setUint8(offset + i, string.charCodeAt(i));
+      }
+    };
+    
+    writeString(0, 'RIFF');
+    view.setUint32(4, 36 + length * 2, true);
+    writeString(8, 'WAVE');
+    writeString(12, 'fmt ');
+    view.setUint32(16, 16, true);
+    view.setUint16(20, 1, true);
+    view.setUint16(22, 1, true);
+    view.setUint32(24, sampleRate, true);
+    view.setUint32(28, sampleRate * 2, true);
+    view.setUint16(32, 2, true);
+    view.setUint16(34, 16, true);
+    writeString(36, 'data');
+    view.setUint32(40, length * 2, true);
+    
+    // Convert audio data
+    let offset = 44;
+    for (let i = 0; i < length; i++) {
+      const sample = Math.max(-1, Math.min(1, audioData[i]));
+      view.setInt16(offset, sample < 0 ? sample * 0x8000 : sample * 0x7FFF, true);
+      offset += 2;
+    }
+    
+    await audioContext.close();
+    return new Blob([buffer], { type: 'audio/wav' });
+  };
+
+  const transcribeAudio = async (audioBlob: Blob): Promise<string | null> => {
+    const formData = new FormData();
+    formData.append('file', audioBlob, 'recording.wav');
+    
+    const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/eleven-labs-stt`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+      },
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Transcription failed: ${response.status}`);
+    }
+
+    const data = await response.json();
+    if (!data.success || !data.text) {
+      throw new Error(data.error || 'Failed to transcribe audio');
+    }
+
+    return data.text;
+  };
+
+  const parseHealthMetrics = (text: string): Array<{type: string, value: string, notes?: string}> => {
+    const metrics: Array<{type: string, value: string, notes?: string}> = [];
+    const lowerText = text.toLowerCase();
+    
+    // Blood pressure patterns
+    const bpPatterns = [
+      /blood pressure.*?(\d{2,3})\s*(?:over|\/)\s*(\d{2,3})/i,
+      /bp.*?(\d{2,3})\s*(?:over|\/)\s*(\d{2,3})/i,
+      /(\d{2,3})\s*(?:over|\/)\s*(\d{2,3}).*?(?:blood pressure|bp)/i
+    ];
+    
+    for (const pattern of bpPatterns) {
+      const match = text.match(pattern);
+      if (match) {
+        metrics.push({
+          type: 'blood_pressure',
+          value: `${match[1]}/${match[2]}`,
+          notes: 'Added via voice'
+        });
+        break;
+      }
+    }
+    
+    // Heart rate patterns
+    const hrPatterns = [
+      /heart rate.*?(\d{2,3})/i,
+      /pulse.*?(\d{2,3})/i,
+      /(\d{2,3}).*?(?:bpm|beats per minute|heart rate|pulse)/i
+    ];
+    
+    for (const pattern of hrPatterns) {
+      const match = text.match(pattern);
+      if (match && !metrics.some(m => m.type === 'heart_rate')) {
+        const value = parseInt(match[1]);
+        if (value >= 40 && value <= 200) { // Reasonable heart rate range
+          metrics.push({
+            type: 'heart_rate',
+            value: match[1],
+            notes: 'Added via voice'
+          });
+          break;
+        }
+      }
+    }
+    
+    // Weight patterns
+    const weightPatterns = [
+      /weight.*?(\d{2,3}(?:\.\d)?)\s*(?:pounds|lbs|lb)/i,
+      /(\d{2,3}(?:\.\d)?)\s*(?:pounds|lbs|lb)/i,
+      /weigh.*?(\d{2,3}(?:\.\d)?)/i
+    ];
+    
+    for (const pattern of weightPatterns) {
+      const match = text.match(pattern);
+      if (match) {
+        const value = parseFloat(match[1]);
+        if (value >= 50 && value <= 500) { // Reasonable weight range
+          metrics.push({
+            type: 'weight',
+            value: match[1],
+            notes: 'Added via voice'
+          });
+          break;
+        }
+      }
+    }
+    
+    // Temperature patterns
+    const tempPatterns = [
+      /temperature.*?(\d{2,3}(?:\.\d)?)/i,
+      /temp.*?(\d{2,3}(?:\.\d)?)/i,
+      /(\d{2,3}(?:\.\d)?)\s*(?:degrees|fahrenheit|celsius)/i
+    ];
+    
+    for (const pattern of tempPatterns) {
+      const match = text.match(pattern);
+      if (match) {
+        const value = parseFloat(match[1]);
+        if (value >= 90 && value <= 110) { // Reasonable temperature range in Fahrenheit
+          metrics.push({
+            type: 'temperature',
+            value: match[1],
+            notes: 'Added via voice'
+          });
+          break;
+        }
+      }
+    }
+    
+    // Blood glucose patterns
+    const bgPatterns = [
+      /blood glucose.*?(\d{2,3})/i,
+      /blood sugar.*?(\d{2,3})/i,
+      /glucose.*?(\d{2,3})/i,
+      /(\d{2,3}).*?(?:mg\/dl|milligrams|glucose|blood sugar)/i
+    ];
+    
+    for (const pattern of bgPatterns) {
+      const match = text.match(pattern);
+      if (match) {
+        const value = parseInt(match[1]);
+        if (value >= 50 && value <= 400) { // Reasonable glucose range
+          metrics.push({
+            type: 'blood_glucose',
+            value: match[1],
+            notes: 'Added via voice'
+          });
+          break;
+        }
+      }
+    }
+    
+    return metrics;
+  };
+
+  const applyParsedMetricsToForm = (parsedMetrics: Array<{type: string, value: string, notes?: string}>) => {
+    setFormData(prev => {
+      const newFormData = { ...prev };
+      
+      parsedMetrics.forEach(metric => {
+        if (metric.type in newFormData) {
+          (newFormData as any)[metric.type] = {
+            value: metric.value,
+            notes: metric.notes || ''
+          };
+        }
+      });
+      
+      return newFormData;
+    });
+  };
 
   const handleMetricChange = (metricType: string, field: 'value' | 'notes', value: string) => {
     setFormData(prev => ({
@@ -168,10 +458,17 @@ export default function HealthTracking() {
               <h1 className="text-xl sm:text-2xl font-bold text-gray-900 truncate">Health Tracking</h1>
               <p className="text-sm sm:text-base text-gray-600">Monitor and track your health metrics</p>
             </div>
-            <div className="w-full sm:w-auto">
+            <div className="flex space-x-2 w-full sm:w-auto">
+              <button
+                onClick={() => setShowVoiceRecording(true)}
+                className="flex-1 sm:flex-none bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center space-x-2 font-medium"
+              >
+                <Mic className="h-5 w-5 flex-shrink-0" />
+                <span>Voice Entry</span>
+              </button>
               <button
                 onClick={() => setShowAddForm(true)}
-                className="w-full sm:w-auto bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center space-x-2 font-medium"
+                className="flex-1 sm:flex-none bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center space-x-2 font-medium"
               >
                 <Plus className="h-5 w-5 flex-shrink-0" />
                 <span>Add Reading</span>
@@ -258,12 +555,21 @@ export default function HealthTracking() {
                     {selectedCategoryData && <selectedCategoryData.icon className="h-10 w-10 sm:h-12 sm:w-12 mx-auto" />}
                   </div>
                   <p className="text-gray-500 text-sm sm:text-base">No readings recorded yet</p>
-                  <button
-                    onClick={() => setShowAddForm(true)}
-                    className="mt-2 text-blue-600 hover:text-blue-700 font-medium text-sm sm:text-base"
-                  >
-                    Add your first reading
-                  </button>
+                  <div className="flex flex-col sm:flex-row gap-2 justify-center mt-4">
+                    <button
+                      onClick={() => setShowVoiceRecording(true)}
+                      className="text-green-600 hover:text-green-700 font-medium text-sm sm:text-base"
+                    >
+                      Add via voice
+                    </button>
+                    <span className="text-gray-400 hidden sm:inline">or</span>
+                    <button
+                      onClick={() => setShowAddForm(true)}
+                      className="text-blue-600 hover:text-blue-700 font-medium text-sm sm:text-base"
+                    >
+                      Add manually
+                    </button>
+                  </div>
                 </div>
               ) : (
                 <div className="space-y-3 overflow-hidden">
@@ -303,6 +609,75 @@ export default function HealthTracking() {
           </div>
         </div>
       </div>
+
+      {/* Voice Recording Modal */}
+      {showVoiceRecording && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg w-full max-w-md">
+            <div className="p-6">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Voice Health Entry</h3>
+              
+              {voiceError && (
+                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-red-700 text-sm">{voiceError}</p>
+                </div>
+              )}
+              
+              <div className="text-center">
+                {isProcessingVoice ? (
+                  <div className="py-8">
+                    <Loader2 className="h-12 w-12 animate-spin text-blue-600 mx-auto mb-4" />
+                    <p className="text-gray-600">Processing your voice recording...</p>
+                  </div>
+                ) : (
+                  <div className="py-8">
+                    <div className="mb-6">
+                      <button
+                        onClick={isRecording ? handleStopVoiceRecording : handleStartVoiceRecording}
+                        className={`p-6 rounded-full transition-all duration-200 ${
+                          isRecording
+                            ? 'bg-red-500 text-white shadow-lg scale-110 animate-pulse'
+                            : 'bg-green-600 text-white hover:bg-green-700 shadow-md'
+                        }`}
+                      >
+                        {isRecording ? <MicOff className="h-8 w-8" /> : <Mic className="h-8 w-8" />}
+                      </button>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <p className="font-medium text-gray-900">
+                        {isRecording ? 'Recording...' : 'Tap to start recording'}
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        Say your health readings like:<br />
+                        "My blood pressure is 120 over 80"<br />
+                        "Heart rate 72 beats per minute"<br />
+                        "Weight 150 pounds"
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+              
+              <div className="flex space-x-3 mt-6">
+                <button
+                  onClick={() => {
+                    setShowVoiceRecording(false);
+                    setVoiceError(null);
+                    if (isRecording) {
+                      handleStopVoiceRecording();
+                    }
+                  }}
+                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                  disabled={isProcessingVoice}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Multi-Metric Add Reading Modal */}
       {showAddForm && (
