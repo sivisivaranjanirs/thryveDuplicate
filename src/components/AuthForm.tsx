@@ -1,18 +1,16 @@
 import React, { useState } from 'react';
-import { Leaf, Mail, Lock, User, Eye, EyeOff } from 'lucide-react';
+import { Leaf, Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
+import { loginRateLimiter } from '../utils/rateLimiter';
 
 export default function AuthForm() {
-  const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
   
-  const { signIn, signUp } = useAuth();
+  const { signIn } = useAuth();
 
   const validateForm = () => {
     if (!email.trim()) {
@@ -30,19 +28,20 @@ export default function AuthForm() {
       return false;
     }
 
-    if (isSignUp && password !== confirmPassword) {
-      setError('Passwords do not match');
-      return false;
-    }
-
     return true;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    setSuccess(null);
 
+    // Check rate limiting
+    const clientIP = 'client'; // In production, you'd get the real IP
+    if (!loginRateLimiter.isAllowed(clientIP)) {
+      const remainingTime = Math.ceil(loginRateLimiter.getRemainingTime(clientIP) / 1000 / 60);
+      setError(`Too many login attempts. Please try again in ${remainingTime} minutes.`);
+      return;
+    }
     if (!validateForm()) {
       return;
     }
@@ -50,24 +49,23 @@ export default function AuthForm() {
     setLoading(true);
 
     try {
-      const { error } = isSignUp 
-        ? await signUp(email, password)
-        : await signIn(email, password);
+      const { error } = await signIn(email, password);
 
       if (error) {
-        setError(error.message);
-      } else if (isSignUp) {
-        // Account created successfully - show success message
-        setSuccess('Account created successfully! Please check your email to verify your account before signing in.');
-        // Clear form fields
-        setEmail('');
-        setPassword('');
-        setConfirmPassword('');
-        // Switch to sign in mode
-        setIsSignUp(false);
+        // Provide generic error message to prevent user enumeration
+        if (error.message.includes('Invalid login credentials') || 
+            error.message.includes('Email not confirmed') ||
+            error.message.includes('User not found')) {
+          setError('Invalid email or password. Please check your credentials.');
+        } else {
+          setError('Login failed. Please try again.');
+        }
+      } else {
+        // Reset rate limiter on successful login
+        loginRateLimiter.reset(clientIP);
       }
     } catch (err) {
-      setError('An unexpected error occurred');
+      setError('An unexpected error occurred. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -84,9 +82,7 @@ export default function AuthForm() {
             </div>
           </div>
           <h1 className="text-3xl font-bold text-gray-900">Thryve</h1>
-          <p className="text-gray-600 mt-2">
-            {isSignUp ? 'Create your account' : 'Welcome back'}
-          </p>
+          <p className="text-gray-600 mt-2">Sign in to your account</p>
         </div>
 
         {/* Form */}
@@ -95,12 +91,6 @@ export default function AuthForm() {
             {error && (
               <div className="bg-red-50 border border-red-200 rounded-lg p-4">
                 <p className="text-red-600 text-sm">{error}</p>
-              </div>
-            )}
-
-            {success && (
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                <p className="text-green-600 text-sm">{success}</p>
               </div>
             )}
 
@@ -117,6 +107,7 @@ export default function AuthForm() {
                   className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="Enter your email"
                   required
+                  autoComplete="email"
                 />
               </div>
             </div>
@@ -132,9 +123,10 @@ export default function AuthForm() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Enter your password (min. 6 characters)"
+                  placeholder="Enter your password"
                   required
                   minLength={6}
+                  autoComplete="current-password"
                 />
                 <button
                   type="button"
@@ -144,32 +136,7 @@ export default function AuthForm() {
                   {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </button>
               </div>
-              {isSignUp && (
-                <p className="text-xs text-gray-500 mt-1">
-                  Password must be at least 6 characters long
-                </p>
-              )}
             </div>
-
-            {isSignUp && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Confirm Password
-                </label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Confirm your password"
-                    required
-                    minLength={6}
-                  />
-                </div>
-              </div>
-            )}
 
             <button
               type="submit"
@@ -179,33 +146,29 @@ export default function AuthForm() {
               {loading ? (
                 <div className="flex items-center justify-center">
                   <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                  {isSignUp ? 'Creating Account...' : 'Signing In...'}
+                  Signing In...
                 </div>
               ) : (
-                isSignUp ? 'Create Account' : 'Sign In'
+                'Sign In'
               )}
             </button>
           </form>
 
+          {/* Contact Admin Message */}
           <div className="mt-6 text-center">
-            <button
-              onClick={() => setIsSignUp(!isSignUp)}
-              className="text-blue-600 hover:text-blue-700 font-medium"
-            >
-              {isSignUp 
-                ? 'Already have an account? Sign in' 
-                : "Don't have an account? Sign up"
-              }
-            </button>
+            <p className="text-sm text-gray-600">
+              Don't have an account?{' '}
+              <span className="text-gray-500">Contact your administrator for access.</span>
+            </p>
           </div>
         </div>
 
-        {/* Demo credentials 
+        {/* Security Notice */}
         <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <p className="text-sm text-blue-800 font-medium mb-2">Demo Credentials:</p>
-          <p className="text-sm text-blue-700">Email: demo@thryve.com</p>
-          <p className="text-sm text-blue-700">Password: demo123</p>
-        </div>*/}
+          <p className="text-sm text-blue-800 text-center">
+            <strong>Secure Access:</strong> This application requires authorized access only.
+          </p>
+        </div>
       </div>
     </div>
   );
